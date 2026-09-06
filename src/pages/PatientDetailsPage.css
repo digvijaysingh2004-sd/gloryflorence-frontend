@@ -1,0 +1,1789 @@
+.patient-details-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.details-header-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.registration-tag {
+  background-color: var(--color-slate-800);
+  border: 1px solid var(--color-slate-700);
+  color: var(--color-slate-300);
+  padding: 0.375rem 0.75rem;
+  border-radius: var(--border-radius-md);
+  font-size: 0.825rem;
+  font-weight: 500;
+}
+
+/* Two-column layout grid */
+.details-grid-container {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+/* Left Column Profile Sidebar */
+.profile-summary-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.profile-main-card {
+  border: 1px solid var(--color-slate-700);
+  background-color: var(--color-slate-800);
+  text-align: center;
+  padding: 1.75rem;
+}
+
+.profile-header-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.profile-circle-avatar {
+  width: 5rem;
+  height: 5rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-teal-500), var(--color-teal-700));
+  color: var(--color-slate-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.25rem;
+  font-weight: 700;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  margin-bottom: 1rem;
+}
+
+.profile-name {
+  color: var(--color-slate-100);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.profile-sub-details {
+  font-size: 0.825rem;
+  color: var(--color-slate-400);
+  margin-top: 0.5rem;
+}
+
+.profile-divider {
+  border: 0;
+  height: 1px;
+  background-color: var(--color-slate-700);
+  margin: 1.25rem 0;
+}
+
+.profile-contact-block, .profile-emergency-block {
+  text-align: left;
+}
+
+.card-sub-header {
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-slate-300);
+  margin-bottom: 0.75rem;
+}
+
+.profile-contact-block p, .profile-emergency-block p {
+  font-size: 0.85rem;
+  color: var(--color-slate-300);
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.profile-contact-block p strong, .profile-emergency-block p strong {
+  color: var(--color-slate-400);
+}
+
+.text-danger {
+  color: #ef4444 !important;
+}
+
+.text-teal {
+  color: var(--color-teal-400) !important;
+}
+
+.text-blue {
+  color: #3b82f6 !important;
+}
+
+.text-orange {
+  color: #f97316 !important;
+}
+
+/* Vitals Cards */
+.vitals-quick-card {
+  border: 1px solid var(--color-slate-700);
+  background-color: var(--color-slate-800);
+  padding: 1.25rem;
+}
+
+.vitals-quick-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.vitals-edit-btn {
+  padding: 0.25rem 0.5rem !important;
+  font-size: 0.75rem !important;
+}
+
+.no-vitals-message {
+  font-size: 0.85rem;
+  color: var(--color-slate-400);
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.vitals-values-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.vitals-widget {
+  background-color: var(--color-slate-900);
+  border: 1px solid var(--color-slate-700);
+  padding: 0.75rem;
+  border-radius: var(--border-radius-md);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.widget-icon {
+  flex-shrink: 0;
+}
+
+.widget-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.widget-val {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-slate-100);
+}
+
+.widget-label {
+  font-size: 0.675rem;
+  color: var(--color-slate-400);
+  margin-top: 0.125rem;
+}
+
+.vitals-timestamp {
+  font-size: 0.7rem;
+  color: var(--color-slate-500);
+  text-align: center;
+  margin-top: 0.75rem;
+}
+
+/* Right Column Tabs */
+.tabs-content-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.tabs-header-bar {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--color-slate-700);
+  overflow-x: auto;
+  padding-bottom: 1px;
+}
+
+.tab-btn-link {
+  background: none;
+  border: none;
+  color: var(--color-slate-400);
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+}
+
+.tab-btn-link:hover {
+  color: var(--color-slate-200);
+}
+
+.tab-btn-link-active {
+  color: var(--color-teal-400);
+  border-bottom-color: var(--color-teal-500);
+  font-weight: 600;
+}
+
+.tab-body-container {
+  min-height: 400px;
+}
+
+.tab-card {
+  border: 1px solid var(--color-slate-700);
+  background-color: var(--color-slate-800);
+  padding: 1.5rem;
+}
+
+.tab-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-slate-100);
+  margin-bottom: 1.25rem;
+}
+
+.tab-card-header-btn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.tab-card-header-btn .tab-title {
+  margin-bottom: 0;
+}
+
+/* Tab Content: Overview */
+.section-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-teal-400);
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.overview-complaint-section, .overview-goals-section {
+  margin-bottom: 1.5rem;
+}
+
+.content-paragraph-box {
+  background-color: var(--color-slate-900);
+  border: 1px solid var(--color-slate-700);
+  padding: 1rem;
+  border-radius: var(--border-radius-md);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--color-slate-200);
+}
+
+.text-teal-accent {
+  color: var(--color-teal-300) !important;
+  border-left: 3px solid var(--color-teal-500);
+}
+
+.details-textarea-notes {
+  width: 100%;
+  height: 120px;
+  background-color: var(--color-slate-900);
+  color: var(--color-slate-100);
+  border: 1px solid var(--color-slate-700);
+  border-radius: var(--border-radius-md);
+  padding: 0.75rem;
+  font-size: 0.875rem;
+  outline: none;
+  resize: vertical;
+  line-height: 1.5;
+  transition: border-color var(--transition-fast);
+}
+
+.details-textarea-notes:focus {
+  border-color: var(--color-teal-500);
+}
+
+/* Tab Content: Medical History */
+.history-entries-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.history-entry-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1rem;
+  background-color: var(--color-slate-900);
+  border: 1px solid var(--color-slate-700);
+  border-radius: var(--border-radius-md);
+  gap: 1rem;
+}
+
+.entry-row-left {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.entry-severity-dot {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 50%;
+  margin-top: 0.375rem;
+  flex-shrink: 0;
+}
+
+.severity-mild { background-color: #3b82f6; }
+.severity-moderate { background-color: #f59e0b; }
+.severity-severe { background-color: #ef4444; }
+
+.entry-condition-name {
+  font-weight: 600;
+  color: var(--color-slate-100);
+  font-size: 0.925rem;
+}
+
+.entry-date-diagnosed {
+  font-size: 0.75rem;
+  color: var(--color-slate-400);
+  margin-top: 0.125rem;
+}
+
+.entry-notes {
+  font-size: 0.825rem;
+  color: var(--color-slate-300);
+  margin-top: 0.375rem;
+  line-height: 1.4;
+}
+
+.entry-row-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.history-delete-btn {
+  background: none;
+  border: none;
+  color: var(--color-slate-400);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: var(--border-radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.history-delete-btn:hover {
+  color: #ef4444;
+  background-color: var(--color-slate-800);
+}
+
+.empty-history-alert {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background-color: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  padding: 1rem;
+  border-radius: var(--border-radius-md);
+  font-size: 0.875rem;
+}
+
+/* Tab Content: Documents */
+.drag-upload-sandbox {
+  border: 2px dashed var(--color-slate-600);
+  background-color: var(--color-slate-900);
+  border-radius: var(--border-radius-lg);
+  padding: 2rem 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.drag-upload-sandbox:hover {
+  border-color: var(--color-teal-500);
+  background-color: rgba(20, 184, 166, 0.04);
+}
+
+.upload-icon {
+  color: var(--color-slate-400);
+  margin-bottom: 0.5rem;
+}
+
+.upload-sandbox-text {
+  font-size: 0.875rem;
+  color: var(--color-slate-200);
+  font-weight: 500;
+}
+
+.upload-subtext {
+  font-size: 0.75rem;
+  color: var(--color-slate-500);
+}
+
+.animate-pulse {
+  animation: pulse 1.5s infinite ease-in-out;
+  color: var(--color-teal-400);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.08); }
+}
+
+.docs-attachments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.document-entry-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.875rem;
+  background-color: var(--color-slate-900);
+  border: 1px solid var(--color-slate-700);
+  border-radius: var(--border-radius-md);
+  gap: 1rem;
+}
+
+.doc-left-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.doc-file-icon {
+  background-color: var(--color-slate-800);
+  color: var(--color-teal-400);
+  padding: 0.5rem;
+  border-radius: var(--border-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.doc-filename {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-slate-100);
+}
+
+.doc-meta {
+  font-size: 0.75rem;
+  color: var(--color-slate-400);
+}
+
+.doc-right-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.doc-action-btn {
+  padding: 0.375rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all var(--transition-fast);
+}
+
+.btn-dl {
+  background-color: var(--color-slate-800);
+  color: var(--color-slate-200);
+  border: 1px solid var(--color-slate-700);
+}
+
+.btn-dl:hover {
+  background-color: var(--color-slate-700);
+  color: var(--color-slate-100);
+}
+
+.btn-del {
+  background: none;
+  border: none;
+  color: var(--color-slate-400);
+}
+
+.btn-del:hover {
+  color: #ef4444;
+  background-color: rgba(239, 68, 68, 0.08);
+}
+
+.empty-docs-message {
+  font-size: 0.85rem;
+  color: var(--color-slate-400);
+  text-align: center;
+  padding: 1.5rem;
+}
+
+/* Tab Content: Appointments */
+.appointments-list-timeline {
+  position: relative;
+  padding-left: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.appointments-list-timeline::before {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background-color: var(--color-slate-700);
+}
+
+.appt-timeline-node {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.appt-timeline-node::before {
+  content: '';
+  position: absolute;
+  left: -24px;
+  top: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--color-teal-500);
+  box-shadow: 0 0 0 4px var(--color-slate-800);
+}
+
+.timeline-node-time {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--color-slate-400);
+  margin-bottom: 0.5rem;
+}
+
+.timeline-hour {
+  background-color: var(--color-slate-900);
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--border-radius-sm);
+  color: var(--color-slate-300);
+  font-weight: 500;
+}
+
+.timeline-node-card {
+  background-color: var(--color-slate-900);
+  border: 1px solid var(--color-slate-700);
+  border-radius: var(--border-radius-md);
+  padding: 1rem;
+}
+
+.timeline-node-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.appt-type-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-slate-100);
+}
+
+.appt-therapist {
+  font-size: 0.75rem;
+  color: var(--color-slate-400);
+  display: block;
+  margin-top: 0.125rem;
+}
+
+.status-badge-scheduled {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.appt-notes-text {
+  margin-top: 0.75rem;
+  font-size: 0.825rem;
+  color: var(--color-slate-300);
+  line-height: 1.4;
+  border-top: 1px dashed var(--color-slate-700);
+  padding-top: 0.5rem;
+}
+
+.empty-timeline-message {
+  font-size: 0.85rem;
+  color: var(--color-slate-400);
+  text-align: center;
+  padding: 1.5rem;
+}
+
+/* Tab Content: Treatment Plans */
+.treatment-plans-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.treatment-plan-card {
+  background-color: var(--color-slate-900);
+  border: 1px solid var(--color-slate-700);
+  border-radius: var(--border-radius-lg);
+  padding: 1.25rem;
+}
+
+.plan-border-active {
+  border-color: var(--color-teal-500);
+  box-shadow: 0 0 0 1px rgba(20, 184, 166, 0.2);
+}
+
+.plan-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+.plan-diagnosis {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-slate-100);
+}
+
+.plan-dates {
+  font-size: 0.75rem;
+  color: var(--color-slate-400);
+  display: block;
+  margin-top: 0.125rem;
+}
+
+.plan-progress-wrapper {
+  margin-bottom: 1.25rem;
+}
+
+.progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--color-slate-300);
+  margin-bottom: 0.375rem;
+}
+
+.progress-bar-bg {
+  width: 100%;
+  height: 0.5rem;
+  background-color: var(--color-slate-800);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-teal-600), var(--color-teal-400));
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.plan-details-info {
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+}
+
+.plan-details-info strong {
+  display: block;
+  color: var(--color-slate-400);
+  margin-bottom: 0.25rem;
+}
+
+.plan-goals {
+  color: var(--color-slate-200);
+  line-height: 1.5;
+}
+
+.plan-therapies-tags {
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.plan-therapies-tags strong {
+  display: block;
+  color: var(--color-slate-400);
+  margin-bottom: 0.375rem;
+}
+
+.tags-flex {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.therapy-tag {
+  background-color: var(--color-slate-800);
+  color: var(--color-slate-300);
+  border: 1px solid var(--color-slate-700);
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--border-radius-sm);
+  font-weight: 500;
+}
+
+.plan-sessions-timeline {
+  border-top: 1px solid var(--color-slate-800);
+  padding-top: 1rem;
+  font-size: 0.85rem;
+}
+
+.plan-sessions-timeline strong {
+  display: block;
+  color: var(--color-slate-400);
+  margin-bottom: 0.5rem;
+}
+
+.session-logs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.session-log-item {
+  background-color: var(--color-slate-800);
+  border-left: 3px solid var(--color-teal-500);
+  padding: 0.5rem;
+  border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.775rem;
+}
+
+.log-date {
+  color: var(--color-slate-400);
+  white-space: nowrap;
+}
+
+.log-notes {
+  color: var(--color-slate-200);
+  font-style: italic;
+  flex-grow: 1;
+}
+
+.log-therapist {
+  color: var(--color-slate-400);
+}
+
+.empty-plans-message {
+  font-size: 0.85rem;
+  color: var(--color-slate-400);
+  text-align: center;
+  padding: 1.5rem;
+}
+
+/* Tab Content: Billing & Invoices */
+.billing-table-wrapper {
+  overflow-x: auto;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--color-slate-700);
+}
+
+.billing-table .table-td {
+  padding: 0.75rem 1rem;
+}
+
+.billing-preview-btn {
+  padding: 0.375rem 0.75rem !important;
+  font-size: 0.75rem !important;
+}
+
+.status-badge-paid {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.status-badge-unpaid {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.status-badge-partially-paid {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.empty-billing-message {
+  font-size: 0.85rem;
+  color: var(--color-slate-400);
+  text-align: center;
+  padding: 1.5rem;
+}
+
+/* Modals */
+.vitals-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.vitals-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Printable Invoice Modal Styles */
+.invoice-printable-container {
+  color: #1e293b;
+  background-color: #ffffff;
+  padding: 2rem;
+  border-radius: var(--border-radius-md);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  font-family: 'Inter', system-ui, sans-serif;
+  line-height: 1.5;
+}
+
+.invoice-print-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+}
+
+.company-info h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 0.25rem;
+}
+
+.company-info p, .invoice-meta-header p {
+  font-size: 0.825rem;
+  color: #475569;
+  margin-bottom: 0.125rem;
+}
+
+.invoice-meta-header {
+  text-align: right;
+}
+
+.invoice-meta-header h2 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.025em;
+}
+
+.print-divider {
+  border: 0;
+  height: 1px;
+  background-color: #cbd5e1;
+  margin: 1.5rem 0;
+}
+
+.invoice-recipient-block {
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+}
+
+.invoice-recipient-block strong {
+  color: #0f172a;
+  display: block;
+  margin-bottom: 0.375rem;
+}
+
+.invoice-recipient-block p {
+  color: #334155;
+  margin-bottom: 0.125rem;
+}
+
+.print-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.875rem;
+}
+
+.print-table th {
+  background-color: #f1f5f9;
+  color: #1e293b;
+  font-weight: 600;
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 2px solid #cbd5e1;
+}
+
+.print-table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+  color: #334155;
+}
+
+.text-right {
+  text-align: right !important;
+}
+
+.invoice-totals-wrapper {
+  margin-left: auto;
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.totals-row {
+  display: flex;
+  justify-content: space-between;
+  color: #475569;
+}
+
+.total-highlight {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+  border-top: 1px solid #cbd5e1;
+  padding-top: 0.5rem;
+}
+
+.font-medium {
+  font-weight: 600;
+}
+
+.border-t {
+  border-top: 1px solid #cbd5e1;
+  padding-top: 0.25rem;
+}
+
+.invoice-terms-footer {
+  margin-top: 2.5rem;
+  font-size: 0.75rem;
+  color: #64748b;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 1rem;
+}
+
+.invoice-terms-footer p {
+  margin-bottom: 0.25rem;
+}
+
+.thank-you {
+  font-style: italic;
+  color: #475569;
+  margin-top: 0.5rem;
+}
+
+.invoice-print-footer-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* Loading state */
+.patient-details-loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 1rem;
+  color: var(--color-slate-400);
+  font-size: 0.875rem;
+}
+
+.spinner {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 4px solid var(--color-slate-700);
+  border-top-color: var(--color-teal-500);
+  border-radius: 50%;
+  animation: spin 1s infinite linear;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Patient Not Found */
+.patient-not-found-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  text-align: center;
+  background-color: var(--color-slate-800);
+  border: 1px solid var(--color-slate-700);
+  border-radius: var(--border-radius-lg);
+  gap: 1rem;
+}
+
+.error-icon {
+  color: #ef4444;
+}
+
+.patient-not-found-card h3 {
+  color: var(--color-slate-100);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   DAY 5: CLINICAL ASSESSMENTS & TREATMENT PLAN BUILDER STYLES
+   ========================================================================== */
+
+/* Assessment Metrics Banner */
+.assessment-metrics-banner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  background-color: var(--color-slate-900);
+  border: 1px solid var(--color-slate-700);
+  border-radius: var(--border-radius-lg);
+  padding: 1rem;
+}
+
+.metric-pill {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  background-color: var(--color-slate-800);
+  padding: 0.75rem 1rem;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--color-slate-700);
+}
+
+.metric-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-slate-400);
+}
+
+.metric-value-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.metric-value-text {
+  font-size: 0.95rem;
+  color: var(--color-slate-200);
+}
+
+/* Pain Level Badges & VAS Visuals */
+.pain-val-badge {
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.85rem;
+}
+
+.pain-badge-mild {
+  background-color: rgba(16, 185, 129, 0.18);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.pain-badge-moderate {
+  background-color: rgba(245, 158, 11, 0.18);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.pain-badge-severe {
+  background-color: rgba(239, 68, 68, 0.18);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.pain-val-text {
+  font-size: 0.85rem;
+  color: var(--color-slate-300);
+  font-weight: 500;
+}
+
+.vas-score-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 0.825rem;
+}
+
+/* Clinical Assessment Cards */
+.assessments-list-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.clinical-assessment-card {
+  background-color: var(--color-slate-800);
+  border: 1px solid var(--color-slate-700);
+  border-radius: var(--border-radius-lg);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.clinical-assessment-card:hover {
+  border-color: var(--color-teal-500);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.asm-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.asm-date-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--color-slate-400);
+}
+
+.asm-diagnosis-title {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--color-slate-100);
+  margin-top: 0.35rem;
+}
+
+.asm-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.prognosis-tag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--border-radius-sm);
+}
+
+.prognosis-excellent,
+.prognosis-good {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.prognosis-fair {
+  background-color: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.prognosis-guarded {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.asm-delete-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-slate-400);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s ease;
+}
+
+.asm-delete-btn:hover {
+  color: #ef4444;
+}
+
+.vas-scale-track-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  background-color: var(--color-slate-900);
+  padding: 0.75rem 1rem;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--color-slate-700);
+}
+
+.vas-scale-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--color-slate-300);
+  font-weight: 500;
+}
+
+.vas-type-label {
+  color: var(--color-teal-400);
+}
+
+.vas-scale-track {
+  width: 100%;
+  height: 6px;
+  background-color: var(--color-slate-800);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.vas-scale-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.asm-section-box {
+  background-color: var(--color-slate-900);
+  padding: 0.875rem 1rem;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--color-slate-750, rgba(255, 255, 255, 0.06));
+}
+
+.asm-section-heading {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-slate-400);
+  margin-bottom: 0.35rem;
+  display: block;
+}
+
+.asm-text {
+  font-size: 0.9rem;
+  color: var(--color-slate-200);
+  line-height: 1.5;
+}
+
+.asm-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.asm-grid-column {
+  background-color: var(--color-slate-900);
+  padding: 0.875rem 1rem;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--color-slate-750, rgba(255, 255, 255, 0.06));
+  font-size: 0.85rem;
+  color: var(--color-slate-300);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.asm-col-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--color-teal-400);
+  margin-bottom: 0.25rem;
+}
+
+.asm-goals-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-slate-700);
+}
+
+.asm-goals-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+}
+
+.asm-goal-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-slate-200);
+}
+
+.asm-freq-badge {
+  background-color: var(--color-slate-900);
+  border: 1px solid var(--color-slate-700);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  color: var(--color-teal-300);
+  width: fit-content;
+  margin-top: 0.2rem;
+}
+
+.empty-assessments-box,
+.empty-plans-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  background-color: var(--color-slate-900);
+  border: 1px dashed var(--color-slate-700);
+  border-radius: var(--border-radius-lg);
+  gap: 0.75rem;
+}
+
+.empty-assessments-box h4,
+.empty-plans-wrapper h4 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--color-slate-200);
+}
+
+.empty-assessments-box p,
+.empty-plans-wrapper p {
+  font-size: 0.875rem;
+  color: var(--color-slate-400);
+  max-width: 450px;
+}
+
+/* Treatment Plan Controls & Accordion */
+.tab-actions-cluster {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.plan-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-top: 0.35rem;
+}
+
+.plan-freq-badge,
+.plan-therapist-badge {
+  background-color: var(--color-slate-900);
+  border: 1px solid var(--color-slate-700);
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  color: var(--color-slate-300);
+}
+
+.plan-status-select {
+  padding: 0.3rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.775rem;
+  font-weight: 600;
+  border: 1px solid var(--color-slate-600);
+  background-color: var(--color-slate-800);
+  cursor: pointer;
+  outline: none;
+}
+
+.plan-history-drawer {
+  margin-top: 1rem;
+  border-top: 1px solid var(--color-slate-700);
+  padding-top: 0.75rem;
+}
+
+.drawer-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.plan-accordion-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-slate-300);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.25rem 0;
+  transition: color 0.15s ease;
+}
+
+.plan-accordion-btn:hover {
+  color: var(--color-teal-400);
+}
+
+.quick-add-session-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  padding: 0.3rem 0.6rem;
+  background-color: var(--color-slate-700);
+  color: var(--color-slate-200);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.quick-add-session-btn:hover {
+  background-color: var(--color-teal-600);
+}
+
+.session-log-card {
+  background-color: var(--color-slate-900);
+  border: 1px solid var(--color-slate-750, rgba(255, 255, 255, 0.08));
+  border-radius: var(--border-radius-md);
+  padding: 0.875rem 1rem;
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.session-log-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.session-date-col {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.session-metrics-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pain-delta-tag {
+  background-color: rgba(20, 184, 166, 0.15);
+  border: 1px solid rgba(20, 184, 166, 0.35);
+  color: var(--color-teal-300);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.relief-indicator {
+  color: #10b981;
+  font-weight: 700;
+}
+
+.tolerance-tag {
+  background-color: var(--color-slate-800);
+  border: 1px solid var(--color-slate-700);
+  color: var(--color-slate-300);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+
+.session-modalities-applied {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.modality-chip {
+  background-color: var(--color-slate-800);
+  border: 1px solid var(--color-slate-700);
+  color: var(--color-slate-300);
+  padding: 0.15rem 0.45rem;
+  border-radius: 3px;
+  font-size: 0.725rem;
+}
+
+.next-session-box {
+  font-size: 0.8rem;
+  color: var(--color-teal-300);
+  background-color: rgba(20, 184, 166, 0.06);
+  padding: 0.4rem 0.65rem;
+  border-radius: 4px;
+  border-left: 3px solid var(--color-teal-500);
+}
+
+.empty-sessions-notice {
+  font-size: 0.85rem;
+  color: var(--color-slate-400);
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background-color: var(--color-slate-900);
+  border-radius: var(--border-radius-md);
+  text-align: center;
+}
+
+/* Interactive VAS Slider in Assessment Modal */
+.vas-interactive-slider-box {
+  background-color: var(--color-slate-900);
+  border: 1px solid var(--color-slate-700);
+  padding: 1.1rem;
+  border-radius: var(--border-radius-md);
+  margin-bottom: 1rem;
+}
+
+.vas-slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.vas-display-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.vas-severity-text {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-slate-200);
+}
+
+.vas-slider-input {
+  width: 100%;
+  accent-color: var(--color-teal-500);
+  cursor: pointer;
+  height: 8px;
+}
+
+.vas-slider-ticks {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--color-slate-400);
+  margin-top: 0.35rem;
+}
+
+.form-section-divider {
+  border-bottom: 1px solid var(--color-slate-700);
+  padding-bottom: 0.4rem;
+  margin: 1.25rem 0 0.875rem 0;
+}
+
+.form-section-divider h4 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-teal-400);
+}
+
+/* Modalities Multi-Select Chips in Plan Builder */
+.modalities-picker-section {
+  margin: 1rem 0;
+}
+
+.picker-helper-text {
+  font-size: 0.8rem;
+  color: var(--color-slate-400);
+  margin-top: 0.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.modalities-chips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.5rem;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 0.25rem;
+  background-color: var(--color-slate-900);
+  border: 1px solid var(--color-slate-700);
+  border-radius: var(--border-radius-md);
+}
+
+.modality-select-chip {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  background-color: var(--color-slate-800);
+  border: 1px solid var(--color-slate-700);
+  border-radius: var(--border-radius-md);
+  color: var(--color-slate-300);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.modality-select-chip:hover {
+  border-color: var(--color-slate-500);
+}
+
+.modality-chip-selected {
+  background-color: rgba(20, 184, 166, 0.2);
+  border-color: var(--color-teal-500);
+  color: var(--color-slate-100);
+}
+
+.chip-name {
+  font-size: 0.825rem;
+  font-weight: 600;
+}
+
+.chip-category {
+  font-size: 0.725rem;
+  color: var(--color-slate-400);
+  margin-top: 0.15rem;
+}
+
+/* Session Check-In Pain Trackers & Checklist */
+.session-pain-tracker-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 0.75rem 0;
+}
+
+.session-pain-box {
+  background-color: var(--color-slate-900);
+  padding: 0.875rem;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--color-slate-700);
+}
+
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.pain-preview-badge {
+  font-size: 0.95rem;
+  font-weight: 700;
+  min-width: 50px;
+  text-align: right;
+  color: var(--color-slate-200);
+}
+
+.session-modalities-check-box {
+  margin: 0.75rem 0;
+  background-color: var(--color-slate-900);
+  padding: 0.875rem;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--color-slate-700);
+}
+
+.modalities-checkbox-flex {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.modality-check-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.825rem;
+  color: var(--color-slate-300);
+  background-color: var(--color-slate-800);
+  padding: 0.35rem 0.65rem;
+  border-radius: 4px;
+  border: 1px solid var(--color-slate-700);
+  cursor: pointer;
+}
+
+.modality-check-label input {
+  accent-color: var(--color-teal-500);
+}
+
+/* Print styles override */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .invoice-printable-container, .invoice-printable-container * {
+    visibility: visible;
+  }
+  .invoice-printable-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    box-shadow: none;
+    padding: 0;
+  }
+  .invoice-print-footer-actions {
+    display: none;
+  }
+}
+
+/* Responsive details layout */
+@media (max-width: 992px) {
+  .details-grid-container {
+    grid-template-columns: 1fr;
+  }
+  .profile-summary-column {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    align-items: stretch;
+  }
+  .profile-main-card, .vitals-quick-card {
+    height: 100%;
+    margin: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .profile-summary-column {
+    grid-template-columns: 1fr;
+  }
+  .vitals-form-grid {
+    grid-template-columns: 1fr;
+  }
+  .tabs-header-bar {
+    border-bottom: none;
+  }
+}

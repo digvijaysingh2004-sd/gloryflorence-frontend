@@ -1,0 +1,83 @@
+.login-form-header {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.login-form-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--slate-800);
+  margin-bottom: 4px;
+}
+
+.login-form-subtitle {
+  font-size: 0.8125rem;
+  color: var(--slate-500);
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.login-form-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: -6px;
+  margin-bottom: 20px;
+}
+
+.login-remember-me {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8125rem;
+  color: var(--slate-600);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.login-remember-checkbox {
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--slate-300);
+  accent-color: var(--primary-500);
+  cursor: pointer;
+}
+
+.login-forgot-pwd {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--primary-600);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.login-forgot-pwd:hover {
+  color: var(--primary-700);
+  text-decoration: underline;
+}
+
+.login-submit-btn {
+  margin-top: 8px;
+  width: 100%;
+}
+
+.login-credentials-helper {
+  margin-top: 24px;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  background-color: var(--slate-100);
+  border: 1px dashed var(--slate-300);
+  font-size: 0.75rem;
+  color: var(--slate-600);
+  line-height: 1.5;
+}
+
+.login-credentials-helper strong {
+  color: var(--slate-800);
+}

@@ -1,0 +1,95 @@
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.input-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--slate-600);
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.input-field {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--slate-300);
+  background-color: white;
+  color: var(--slate-800);
+  transition: all var(--transition-fast);
+  outline: none;
+}
+
+.input-field::placeholder {
+  color: var(--slate-400);
+}
+
+/* Focus and active states */
+.input-field:focus {
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+}
+
+/* Icon overrides */
+.input-field-has-icon-left {
+  padding-left: 40px;
+}
+
+.input-field-has-icon-right {
+  padding-right: 40px;
+}
+
+.input-icon-left {
+  position: absolute;
+  left: 14px;
+  color: var(--slate-450);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.input-icon-right {
+  position: absolute;
+  right: 14px;
+  color: var(--slate-450);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* Textarea specific */
+.input-field-textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* Error state */
+.input-field-error {
+  border-color: var(--danger-500);
+}
+
+.input-field-error:focus {
+  border-color: var(--danger-500);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
+.input-error-msg {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--danger-600);
+  margin-top: 2px;
+}

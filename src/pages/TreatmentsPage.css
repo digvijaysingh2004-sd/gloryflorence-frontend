@@ -1,0 +1,394 @@
+/* Treatments & Exercise Library Styles */
+.treatments-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg, 1.5rem);
+}
+
+.treatments-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.treatments-tabs-nav {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 2px solid var(--border-color, #e2e8f0);
+  margin-top: 0.5rem;
+}
+
+.treatments-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary, #64748b);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.treatments-tab-btn:hover {
+  color: var(--primary, #0d9488);
+}
+
+.treatments-tab-btn.active {
+  color: var(--primary, #0d9488);
+  font-weight: 600;
+  border-bottom-color: var(--primary, #0d9488);
+}
+
+.treatments-tab-badge {
+  background-color: var(--surface-secondary, #f1f5f9);
+  color: var(--text-secondary, #64748b);
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+}
+
+.treatments-tab-btn.active .treatments-tab-badge {
+  background-color: rgba(13, 148, 136, 0.15);
+  color: var(--primary, #0d9488);
+}
+
+/* Overview Summary Stats */
+.treatments-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.treatment-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background-color: var(--surface, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: var(--radius-md, 8px);
+}
+
+.treatment-stat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0fdfa;
+  color: var(--primary, #0d9488);
+}
+
+.treatment-stat-value {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--text-primary, #0f172a);
+}
+
+.treatment-stat-label {
+  font-size: 0.8125rem;
+  color: var(--text-secondary, #64748b);
+}
+
+/* Filters & Search Controls */
+.treatments-filter-card {
+  padding: 1rem 1.25rem;
+}
+
+.filter-bar-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.category-chips {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.category-chip {
+  padding: 6px 12px;
+  border-radius: 9999px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  background-color: var(--surface, #ffffff);
+  color: var(--text-secondary, #64748b);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.category-chip:hover {
+  background-color: #f8fafc;
+  color: var(--text-primary, #0f172a);
+}
+
+.category-chip.active {
+  background-color: #0f766e;
+  border-color: #0f766e;
+  color: #ffffff;
+}
+
+/* Modality Card Grid */
+.treatments-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1.25rem;
+}
+
+.treatment-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: var(--surface, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: var(--radius-lg, 12px);
+  padding: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.treatment-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.treatment-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.treatment-name {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--text-primary, #0f172a);
+  margin-bottom: 4px;
+}
+
+.category-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background-color: #e0f2fe;
+  color: #0369a1;
+}
+
+.treatment-desc {
+  font-size: 0.875rem;
+  color: var(--text-secondary, #475569);
+  line-height: 1.5;
+  margin-bottom: 1rem;
+  flex-grow: 1;
+}
+
+.treatment-equipment-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 1rem;
+}
+
+.equipment-tag {
+  font-size: 0.75rem;
+  background-color: #f1f5f9;
+  color: #475569;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.treatment-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-color, #f1f5f9);
+  font-size: 0.875rem;
+}
+
+.treatment-price-badge {
+  font-weight: 700;
+  color: var(--primary, #0d9488);
+  font-size: 1.125rem;
+}
+
+.treatment-duration-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-muted, #94a3b8);
+  font-size: 0.8125rem;
+}
+
+/* Exercise Cards */
+.exercises-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1.25rem;
+}
+
+.exercise-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: var(--surface, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: var(--radius-lg, 12px);
+  padding: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.exercise-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.exercise-difficulty-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.exercise-difficulty-badge.Beginner {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.exercise-difficulty-badge.Intermediate {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+}
+
+.exercise-difficulty-badge.Advanced {
+  background-color: #f3e8ff;
+  color: #7e22ce;
+}
+
+.exercise-target-area {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-secondary, #64748b);
+  margin-top: 4px;
+}
+
+.dosage-chips-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 0.875rem 0;
+}
+
+.dosage-chip {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  color: var(--text-secondary, #475569);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dosage-chip strong {
+  color: var(--text-primary, #0f172a);
+}
+
+.exercise-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-color, #f1f5f9);
+}
+
+/* Detail Guide Modal */
+.exercise-guide-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.exercise-guide-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+}
+
+.exercise-guide-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.step-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.step-number {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background-color: var(--primary, #0d9488);
+  color: #ffffff;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.step-text {
+  font-size: 0.9375rem;
+  color: var(--text-primary, #1e293b);
+  line-height: 1.5;
+}
+
+.precaution-alert-box {
+  background-color: #fffbeb;
+  border-left: 4px solid #f59e0b;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  color: #92400e;
+  font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+  .treatments-grid,
+  .exercises-grid {
+    grid-template-columns: 1fr;
+  }
+}

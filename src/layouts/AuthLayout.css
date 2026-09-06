@@ -1,0 +1,80 @@
+.auth-layout-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100vw;
+  background: radial-gradient(circle at 10% 20%, rgba(240, 253, 250, 1) 0%, rgba(241, 245, 249, 1) 90%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Background aesthetic elements */
+.auth-layout-bg-shape {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(13, 148, 136, 0.08) 0%, rgba(255, 255, 255, 0) 70%);
+  pointer-events: none;
+}
+
+.auth-layout-bg-shape-1 {
+  top: -10%;
+  right: -5%;
+}
+
+.auth-layout-bg-shape-2 {
+  bottom: -15%;
+  left: -5%;
+}
+
+.auth-card-wrapper {
+  width: 100%;
+  max-width: 440px;
+  padding: 16px;
+  position: relative;
+  z-index: 10;
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+.auth-card {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.auth-logo-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.auth-logo-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background-color: var(--primary-50);
+  color: var(--primary-500);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.auth-logo-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--slate-900);
+}
+
+.auth-logo-subtitle {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--primary-600);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
