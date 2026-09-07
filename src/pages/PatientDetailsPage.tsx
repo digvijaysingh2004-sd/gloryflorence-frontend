@@ -22,6 +22,9 @@ import {
   Target,
   Calendar,
   Layers,
+  Dumbbell,
+  Search,
+  Check,
 } from 'lucide-react';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
@@ -30,6 +33,7 @@ import { Modal } from '../components/common/Modal';
 import { useNotification } from '../context/NotificationContext';
 import { patientService } from '../services/patientService';
 import { treatmentService } from '../services/treatmentService';
+import { prescriptionService } from '../services/prescriptionService';
 import type {
   Patient,
   MedicalHistory,
@@ -40,6 +44,9 @@ import type {
   ClinicalAssessment,
   TreatmentType,
   Invoice,
+  ExercisePrescription,
+  PrescribedExerciseItem,
+  Exercise,
 } from '../types';
 import './PatientDetailsPage.css';
 
@@ -53,7 +60,7 @@ export const PatientDetailsPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   // Tab State
-  const [activeTab, setActiveTab] = useState<'overview' | 'assessments' | 'plans' | 'history' | 'documents' | 'appointments' | 'billing'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'assessments' | 'plans' | 'prescriptions' | 'history' | 'documents' | 'appointments' | 'billing'>('overview');
 
   // Modal States
   const [isVitalsModalOpen, setIsVitalsModalOpen] = useState(false);
@@ -63,10 +70,26 @@ export const PatientDetailsPage: React.FC = () => {
   const [isAssessmentModalOpen, setIsAssessmentModalOpen] = useState(false);
   const [isNewPlanModalOpen, setIsNewPlanModalOpen] = useState(false);
   const [isInvoiceDetailsOpen, setIsInvoiceDetailsOpen] = useState(false);
+  const [isPrescriptionModalOpen, setIsPrescriptionModalOpen] = useState(false);
+  const [isTakeHomeSheetOpen, setIsTakeHomeSheetOpen] = useState(false);
+  const [selectedPrescriptionForSheet, setSelectedPrescriptionForSheet] = useState<ExercisePrescription | null>(null);
 
-  // Available Treatments for Plan Builder
+  // Available Data
   const [availableTreatments, setAvailableTreatments] = useState<TreatmentType[]>([]);
+  const [availableExercises, setAvailableExercises] = useState<Exercise[]>([]);
   const [expandedPlanId, setExpandedPlanId] = useState<string | null>(null);
+
+  // Prescription Builder State (Day 6)
+  const [exerciseSearchQuery, setExerciseSearchQuery] = useState('');
+  const [exerciseCategoryFilter, setExerciseCategoryFilter] = useState('All');
+  const [prescriptionForm, setPrescriptionForm] = useState({
+    diagnosis: '',
+    prescribedDate: new Date().toISOString().split('T')[0],
+    prescribedBy: 'Dr. Glory Physiotherapist',
+    targetGoal: '',
+    generalInstructions: 'Complete each exercise adhering strictly to prescribed hold times and repetitions. Rest 45-60 seconds between sets. Discontinue any movement that provokes sharp or radiating pain.',
+    items: [] as PrescribedExerciseItem[],
+  });
 
   // Vitals Form State
   const [vitalsForm, setVitalsForm] = useState({
@@ -171,6 +194,7 @@ export const PatientDetailsPage: React.FC = () => {
   useEffect(() => {
     fetchPatientDetails();
     treatmentService.getAllTreatments().then((res: TreatmentType[]) => setAvailableTreatments(res)).catch(() => {});
+    treatmentService.getAllExercises().then((res: Exercise[]) => setAvailableExercises(res)).catch(() => {});
   }, [fetchPatientDetails]);
 
   // Vitals Update Submit
@@ -570,6 +594,144 @@ export const PatientDetailsPage: React.FC = () => {
     }
   };
 
+  // DAY 6: EXERCISE PRESCRIPTION HANDLERS
+  const handleOpenPrescriptionModal = () => {
+    const latestDiagnosis = patient?.assessments && patient.assessments.length > 0
+      ? patient.assessments[0].clinicalDiagnosis
+      : (patient?.medicalHistory && patient.medicalHistory.length > 0 ? patient.medicalHistory[0].condition : '');
+
+    const latestGoal = patient?.assessments && patient.assessments.length > 0
+      ? patient.assessments[0].shortTermGoals
+      : '';
+
+    setPrescriptionForm({
+      diagnosis: latestDiagnosis || '',
+      prescribedDate: new Date().toISOString().split('T')[0],
+      prescribedBy: 'Dr. Glory Physiotherapist',
+      targetGoal: latestGoal || '',
+      generalInstructions: 'Complete each exercise adhering strictly to prescribed hold times and repetitions. Rest 45-60 seconds between sets. Discontinue any movement that provokes sharp or radiating pain.',
+      items: [],
+    });
+    setExerciseSearchQuery('');
+    setExerciseCategoryFilter('All');
+    setIsPrescriptionModalOpen(true);
+  };
+
+  const handleToggleExerciseInRx = (exercise: Exercise) => {
+    const existingIndex = prescriptionForm.items.findIndex(i => i.exerciseId === exercise.id);
+    if (existingIndex !== -1) {
+      setPrescriptionForm(prev => ({
+        ...prev,
+        items: prev.items.filter(i => i.exerciseId !== exercise.id)
+      }));
+    } else {
+      const newItem: PrescribedExerciseItem = {
+        id: `rxi_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+        exerciseId: exercise.id,
+        exerciseTitle: exercise.title,
+        category: exercise.category,
+        targetMuscleGroup: exercise.targetMuscleGroup,
+        sets: exercise.defaultSets || 3,
+        reps: exercise.defaultReps || 10,
+        holdSec: exercise.defaultHoldSec || 3,
+        frequency: 'Once daily',
+        durationWeeks: 4,
+        notes: exercise.precautions || '',
+      };
+      setPrescriptionForm(prev => ({
+        ...prev,
+        items: [...prev.items, newItem]
+      }));
+    }
+  };
+
+  const handleUpdateRxItem = (itemId: string, field: keyof PrescribedExerciseItem, val: any) => {
+    setPrescriptionForm(prev => ({
+      ...prev,
+      items: prev.items.map(item => item.id === itemId ? { ...item, [field]: val } : item)
+    }));
+  };
+
+  const handleRemoveRxItem = (itemId: string) => {
+    setPrescriptionForm(prev => ({
+      ...prev,
+      items: prev.items.filter(item => item.id !== itemId)
+    }));
+  };
+
+  const handlePrescriptionSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!patient) return;
+
+    if (!prescriptionForm.diagnosis.trim()) {
+      showToast('Please specify a clinical diagnosis.', 'warning');
+      return;
+    }
+
+    if (prescriptionForm.items.length === 0) {
+      showToast('Please select at least one exercise to prescribe.', 'warning');
+      return;
+    }
+
+    try {
+      const newRx = await prescriptionService.createPrescription(patient.id, {
+        patientId: patient.id,
+        prescribedDate: prescriptionForm.prescribedDate,
+        prescribedBy: prescriptionForm.prescribedBy,
+        diagnosis: prescriptionForm.diagnosis,
+        status: 'Active',
+        targetGoal: prescriptionForm.targetGoal,
+        generalInstructions: prescriptionForm.generalInstructions,
+        items: prescriptionForm.items,
+      });
+
+      setPatient(prev => prev ? {
+        ...prev,
+        prescriptions: [newRx, ...(prev.prescriptions || [])]
+      } : null);
+
+      showToast('Exercise prescription formulated and saved!', 'success');
+      setIsPrescriptionModalOpen(false);
+    } catch {
+      showToast('Failed to save exercise prescription.', 'error');
+    }
+  };
+
+  const handleUpdateRxStatus = async (rxId: string, status: ExercisePrescription['status']) => {
+    if (!patient) return;
+    try {
+      await prescriptionService.updateStatus(patient.id, rxId, status);
+      setPatient(prev => prev ? {
+        ...prev,
+        prescriptions: (prev.prescriptions || []).map(r => r.id === rxId ? { ...r, status } : r)
+      } : null);
+      showToast(`Prescription marked as ${status}`, 'success');
+    } catch {
+      showToast('Failed to update prescription status.', 'error');
+    }
+  };
+
+  const handleDeleteRx = async (rxId: string) => {
+    if (!patient) return;
+    if (!window.confirm('Are you sure you want to remove this exercise prescription?')) return;
+
+    try {
+      await prescriptionService.deletePrescription(patient.id, rxId);
+      setPatient(prev => prev ? {
+        ...prev,
+        prescriptions: (prev.prescriptions || []).filter(r => r.id !== rxId)
+      } : null);
+      showToast('Prescription removed.', 'info');
+    } catch {
+      showToast('Failed to delete prescription.', 'error');
+    }
+  };
+
+  const handleOpenTakeHomeSheet = (rx: ExercisePrescription) => {
+    setSelectedPrescriptionForSheet(rx);
+    setIsTakeHomeSheetOpen(true);
+  };
+
   const calculateAge = (dobString: string) => {
     const today = new Date();
     const birthDate = new Date(dobString);
@@ -713,8 +875,9 @@ export const PatientDetailsPage: React.FC = () => {
           <div className="tabs-header-bar">
             {[
               { id: 'overview', label: 'Overview' },
-              { id: 'assessments', label: 'Assessments' },
-              { id: 'plans', label: 'Treatment Plans' },
+              { id: 'assessments', label: 'Assessments', count: patient.assessments?.length },
+              { id: 'plans', label: 'Treatment Plans', count: patient.treatmentPlans?.length },
+              { id: 'prescriptions', label: 'Exercise Prescriptions', count: patient.prescriptions?.length },
               { id: 'history', label: 'Medical History' },
               { id: 'documents', label: 'Documents' },
               { id: 'appointments', label: 'Appointments' },
@@ -725,7 +888,10 @@ export const PatientDetailsPage: React.FC = () => {
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`tab-btn-link ${activeTab === tab.id ? 'tab-btn-link-active' : ''}`}
               >
-                {tab.label}
+                <span>{tab.label}</span>
+                {tab.count !== undefined && tab.count > 0 && (
+                  <span className="tab-badge-pill">{tab.count}</span>
+                )}
               </button>
             ))}
           </div>
@@ -1299,6 +1465,197 @@ export const PatientDetailsPage: React.FC = () => {
                           iconLeft={<Plus size={16} />}
                         >
                           Create First Treatment Plan
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              </div>
+            )}
+
+            {/* EXERCISE PRESCRIPTIONS TAB (DAY 6) */}
+            {activeTab === 'prescriptions' && (
+              <div className="tab-fade-in">
+                <Card className="tab-card">
+                  <div className="tab-card-header-btn">
+                    <div>
+                      <h3 className="tab-title">Clinical Exercise Prescriptions & Home Routines</h3>
+                      <p className="tab-sub-title">
+                        Individualized rehabilitation regimens formulated from the Clinical Exercise Library with customized sets, repetitions, hold times, and patient adherence tracking.
+                      </p>
+                    </div>
+                    <Button
+                      onClick={handleOpenPrescriptionModal}
+                      variant="primary"
+                      iconLeft={<Plus size={16} />}
+                    >
+                      Prescribe Regimen
+                    </Button>
+                  </div>
+
+                  {/* Summary Metric Banner */}
+                  {patient.prescriptions && patient.prescriptions.length > 0 && (
+                    <div className="prescription-metrics-banner">
+                      <div className="metric-pill">
+                        <span className="metric-label">Active Regimens</span>
+                        <span className="metric-value-text text-teal-accent font-semibold">
+                          {patient.prescriptions.filter(p => p.status === 'Active').length} Active
+                        </span>
+                      </div>
+                      <div className="metric-pill">
+                        <span className="metric-label">Total Prescribed Movements</span>
+                        <span className="metric-value-text">
+                          {patient.prescriptions.reduce((acc, p) => acc + p.items.length, 0)} Exercises
+                        </span>
+                      </div>
+                      <div className="metric-pill">
+                        <span className="metric-label">Primary Care Provider</span>
+                        <span className="metric-value-text">
+                          {patient.prescriptions[0].prescribedBy}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Prescriptions List */}
+                  <div className="prescriptions-list-wrapper">
+                    {patient.prescriptions && patient.prescriptions.length > 0 ? (
+                      patient.prescriptions.map((rx) => {
+                        return (
+                          <div
+                            key={rx.id}
+                            className={`prescription-card ${rx.status === 'Active' ? 'rx-border-active' : ''}`}
+                          >
+                            <div className="rx-card-header">
+                              <div className="rx-header-left">
+                                <h4 className="rx-diagnosis-title">{rx.diagnosis}</h4>
+                                <div className="rx-meta-row">
+                                  <span className="rx-meta-item">
+                                    <Calendar size={13} className="text-muted" />
+                                    Prescribed: {rx.prescribedDate}
+                                  </span>
+                                  <span className="rx-meta-item">
+                                    <Stethoscope size={13} className="text-muted" />
+                                    By: {rx.prescribedBy}
+                                  </span>
+                                  <span className="rx-meta-badge">
+                                    {rx.items.length} {rx.items.length === 1 ? 'Exercise' : 'Exercises'}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="rx-header-actions">
+                                <select
+                                  value={rx.status}
+                                  onChange={(e) => handleUpdateRxStatus(rx.id, e.target.value as ExercisePrescription['status'])}
+                                  className={`rx-status-select status-badge-${rx.status.toLowerCase()}`}
+                                >
+                                  <option value="Active">Active</option>
+                                  <option value="Completed">Completed</option>
+                                  <option value="Suspended">Suspended</option>
+                                </select>
+                                <Button
+                                  onClick={() => handleOpenTakeHomeSheet(rx)}
+                                  variant="secondary"
+                                  iconLeft={<Printer size={14} />}
+                                  className="rx-print-btn"
+                                >
+                                  Take-Home Sheet
+                                </Button>
+                                <button
+                                  onClick={() => handleDeleteRx(rx.id)}
+                                  className="rx-delete-btn"
+                                  title="Delete Prescription"
+                                >
+                                  <Trash2 size={15} />
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Goal & Instructions Banner */}
+                            {rx.targetGoal && (
+                              <div className="rx-goal-box">
+                                <div className="rx-goal-header">
+                                  <Target size={14} className="text-teal-accent" />
+                                  <strong>Rehabilitation Target:</strong>
+                                </div>
+                                <p className="rx-goal-text">{rx.targetGoal}</p>
+                              </div>
+                            )}
+
+                            {rx.generalInstructions && (
+                              <div className="rx-instructions-box">
+                                <span className="rx-instructions-label">Therapist Directions:</span>
+                                <p className="rx-instructions-text">{rx.generalInstructions}</p>
+                              </div>
+                            )}
+
+                            {/* Prescribed Exercises Grid */}
+                            <div className="rx-exercises-section">
+                              <h5 className="rx-exercises-heading">Prescribed Exercise Routine</h5>
+                              <div className="rx-items-grid">
+                                {rx.items.map((item, idx) => (
+                                  <div key={item.id || idx} className="rx-item-card">
+                                    <div className="rx-item-top">
+                                      <span className="rx-item-index">{idx + 1}</span>
+                                      <div className="rx-item-title-col">
+                                        <h6 className="rx-item-name">{item.exerciseTitle}</h6>
+                                        <div className="rx-item-meta-tags">
+                                          <span className="rx-category-tag">{item.category}</span>
+                                          <span className="rx-muscle-tag">{item.targetMuscleGroup}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* Dosage Parameter Pills */}
+                                    <div className="rx-dosage-pills-row">
+                                      <div className="rx-dosage-pill">
+                                        <span className="pill-key">Sets</span>
+                                        <span className="pill-val">{item.sets}</span>
+                                      </div>
+                                      <div className="rx-dosage-pill">
+                                        <span className="pill-key">Reps</span>
+                                        <span className="pill-val">{item.reps}</span>
+                                      </div>
+                                      {item.holdSec ? (
+                                        <div className="rx-dosage-pill">
+                                          <span className="pill-key">Hold</span>
+                                          <span className="pill-val">{item.holdSec}s</span>
+                                        </div>
+                                      ) : null}
+                                      <div className="rx-dosage-pill highlight-pill">
+                                        <span className="pill-key">Frequency</span>
+                                        <span className="pill-val">{item.frequency}</span>
+                                      </div>
+                                      <div className="rx-dosage-pill">
+                                        <span className="pill-key">Duration</span>
+                                        <span className="pill-val">{item.durationWeeks} wks</span>
+                                      </div>
+                                    </div>
+
+                                    {item.notes && (
+                                      <div className="rx-item-notes">
+                                        <span className="notes-icon">⚠️</span>
+                                        <span>{item.notes}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="empty-prescriptions-wrapper">
+                        <Dumbbell size={42} className="empty-icon text-muted" />
+                        <h4>No Exercise Prescriptions Formulated</h4>
+                        <p>Bridge clinical evaluations with personalized home rehabilitation routines from the library.</p>
+                        <Button
+                          onClick={handleOpenPrescriptionModal}
+                          variant="primary"
+                          iconLeft={<Plus size={16} />}
+                        >
+                          Prescribe First Regimen
                         </Button>
                       </div>
                     )}
@@ -2116,6 +2473,405 @@ export const PatientDetailsPage: React.FC = () => {
                 Print Invoice
               </Button>
               <Button onClick={() => setIsInvoiceDetailsOpen(false)} variant="secondary">
+                Close Preview
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* DAY 6: FORMULATE EXERCISE PRESCRIPTION MODAL */}
+      <Modal
+        isOpen={isPrescriptionModalOpen}
+        onClose={() => setIsPrescriptionModalOpen(false)}
+        title="Formulate Clinical Exercise Prescription"
+        size="xl"
+      >
+        <form onSubmit={handlePrescriptionSubmit} className="rx-builder-modal-content">
+          {/* Top Prescription Meta Fields */}
+          <div className="rx-meta-fields-grid">
+            <Input
+              label="Target Clinical Diagnosis *"
+              value={prescriptionForm.diagnosis}
+              onChange={(e) => setPrescriptionForm({ ...prescriptionForm, diagnosis: e.target.value })}
+              placeholder="e.g. Lumbar Disc Herniation / Rotator Cuff Tendinopathy"
+              required
+            />
+            <Input
+              label="Prescribed Date"
+              type="date"
+              value={prescriptionForm.prescribedDate}
+              onChange={(e) => setPrescriptionForm({ ...prescriptionForm, prescribedDate: e.target.value })}
+              required
+            />
+            <Input
+              label="Supervising Clinician"
+              value={prescriptionForm.prescribedBy}
+              onChange={(e) => setPrescriptionForm({ ...prescriptionForm, prescribedBy: e.target.value })}
+              placeholder="Dr. Glory Physiotherapist"
+            />
+          </div>
+
+          <div className="rx-goals-fields-grid">
+            <Input
+              label="Rehabilitation Target & Functional Goal"
+              value={prescriptionForm.targetGoal}
+              onChange={(e) => setPrescriptionForm({ ...prescriptionForm, targetGoal: e.target.value })}
+              placeholder="e.g. Abolish radicular pain and restore pain-free lumbar extension."
+            />
+            <div className="input-group">
+              <label className="input-label">General Patient Instructions</label>
+              <textarea
+                value={prescriptionForm.generalInstructions}
+                onChange={(e) => setPrescriptionForm({ ...prescriptionForm, generalInstructions: e.target.value })}
+                className="input-field rx-textarea"
+                rows={2}
+                placeholder="Guidelines for warm-up, breathing, and stopping criteria..."
+              />
+            </div>
+          </div>
+
+          {/* Exercise Library Picker Section */}
+          <div className="rx-picker-section">
+            <div className="rx-picker-header">
+              <div>
+                <h4 className="rx-picker-title">Select Exercises from Clinical Library</h4>
+                <p className="rx-picker-subtitle">
+                  Browse and select movements to prescribe. Selected: <strong>{prescriptionForm.items.length}</strong>
+                </p>
+              </div>
+              <div className="rx-picker-filters">
+                <div className="search-box-wrap">
+                  <Search size={14} className="search-icon" />
+                  <input
+                    type="text"
+                    placeholder="Search exercises by title or muscle group..."
+                    value={exerciseSearchQuery}
+                    onChange={(e) => setExerciseSearchQuery(e.target.value)}
+                    className="rx-search-input"
+                  />
+                </div>
+                <select
+                  value={exerciseCategoryFilter}
+                  onChange={(e) => setExerciseCategoryFilter(e.target.value)}
+                  className="rx-cat-select"
+                >
+                  <option value="All">All Categories</option>
+                  <option value="Strengthening">Strengthening</option>
+                  <option value="Mobility & Stretching">Mobility & Stretching</option>
+                  <option value="Core Stability">Core Stability</option>
+                  <option value="Balance & Coordination">Balance & Coordination</option>
+                  <option value="Postural Correction">Postural Correction</option>
+                  <option value="Cardiovascular">Cardiovascular</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Exercise Selection Grid */}
+            <div className="rx-available-exercises-grid">
+              {availableExercises
+                .filter((ex) => {
+                  const matchesCat = exerciseCategoryFilter === 'All' || ex.category === exerciseCategoryFilter;
+                  const q = exerciseSearchQuery.toLowerCase();
+                  const matchesQuery = !q || ex.title.toLowerCase().includes(q) || ex.targetMuscleGroup.toLowerCase().includes(q);
+                  return matchesCat && matchesQuery;
+                })
+                .map((ex) => {
+                  const isSelected = prescriptionForm.items.some(i => i.exerciseId === ex.id);
+                  return (
+                    <div
+                      key={ex.id}
+                      onClick={() => handleToggleExerciseInRx(ex)}
+                      className={`rx-catalog-card ${isSelected ? 'catalog-card-selected' : ''}`}
+                    >
+                      <div className="catalog-card-info">
+                        <div className="catalog-title-row">
+                          <span className="catalog-title">{ex.title}</span>
+                          {isSelected && <Check size={16} className="text-teal-accent" />}
+                        </div>
+                        <div className="catalog-meta">
+                          <span className="catalog-cat">{ex.category}</span> • <span className="catalog-muscle">{ex.targetMuscleGroup}</span>
+                        </div>
+                        <div className="catalog-defaults">
+                          Default: {ex.defaultSets} sets × {ex.defaultReps} reps {ex.defaultHoldSec ? `(${ex.defaultHoldSec}s hold)` : ''}
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        className={`catalog-add-btn ${isSelected ? 'btn-selected' : ''}`}
+                      >
+                        {isSelected ? 'Selected' : '+ Add'}
+                      </button>
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+
+          {/* Configured Dosage for Selected Exercises */}
+          {prescriptionForm.items.length > 0 && (
+            <div className="rx-configured-dosage-section">
+              <h4 className="rx-configured-title">
+                Configure Dosage & Parameters for Selected Movements ({prescriptionForm.items.length})
+              </h4>
+              <div className="rx-configured-items-list">
+                {prescriptionForm.items.map((item, idx) => (
+                  <div key={item.id} className="rx-config-row-card">
+                    <div className="config-header-row">
+                      <div className="config-title-left">
+                        <span className="config-item-idx">#{idx + 1}</span>
+                        <strong>{item.exerciseTitle}</strong>
+                        <span className="config-badge">{item.category}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveRxItem(item.id)}
+                        className="config-remove-btn"
+                        title="Remove from prescription"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+
+                    <div className="config-inputs-row">
+                      <div className="config-input-group">
+                        <label>Sets</label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="20"
+                          value={item.sets}
+                          onChange={(e) => handleUpdateRxItem(item.id, 'sets', parseInt(e.target.value) || 1)}
+                          className="config-input-num"
+                        />
+                      </div>
+                      <div className="config-input-group">
+                        <label>Reps</label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="100"
+                          value={item.reps}
+                          onChange={(e) => handleUpdateRxItem(item.id, 'reps', parseInt(e.target.value) || 1)}
+                          className="config-input-num"
+                        />
+                      </div>
+                      <div className="config-input-group">
+                        <label>Hold (sec)</label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="180"
+                          value={item.holdSec || 0}
+                          onChange={(e) => handleUpdateRxItem(item.id, 'holdSec', parseInt(e.target.value) || 0)}
+                          className="config-input-num"
+                        />
+                      </div>
+                      <div className="config-input-group flex-2">
+                        <label>Frequency</label>
+                        <select
+                          value={item.frequency}
+                          onChange={(e) => handleUpdateRxItem(item.id, 'frequency', e.target.value)}
+                          className="config-select"
+                        >
+                          <option value="Once daily">Once daily</option>
+                          <option value="2x daily (Morning & Evening)">2x daily (Morning & Evening)</option>
+                          <option value="3x daily">3x daily</option>
+                          <option value="3x / week (Alternate days)">3x / week (Alternate days)</option>
+                          <option value="5x / week">5x / week</option>
+                          <option value="As needed / For symptom flare-ups">As needed / For symptom flare-ups</option>
+                        </select>
+                      </div>
+                      <div className="config-input-group">
+                        <label>Duration (Weeks)</label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="52"
+                          value={item.durationWeeks}
+                          onChange={(e) => handleUpdateRxItem(item.id, 'durationWeeks', parseInt(e.target.value) || 1)}
+                          className="config-input-num"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="config-precautions-row">
+                      <label>Precautions / Patient Notes:</label>
+                      <input
+                        type="text"
+                        value={item.notes || ''}
+                        onChange={(e) => handleUpdateRxItem(item.id, 'notes', e.target.value)}
+                        placeholder="e.g. Keep abdominal core engaged; cease if pain radiates past knee"
+                        className="config-precautions-input"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="modal-actions-container">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setIsPrescriptionModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={prescriptionForm.items.length === 0}
+              iconLeft={<Plus size={16} />}
+            >
+              Save & Prescribe Regimen ({prescriptionForm.items.length} Movements)
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* DAY 6: PRINTABLE TAKE-HOME EXERCISE ROUTINE MODAL */}
+      <Modal
+        isOpen={isTakeHomeSheetOpen}
+        onClose={() => setIsTakeHomeSheetOpen(false)}
+        title="Patient Take-Home Exercise Routine Handout"
+        size="xl"
+      >
+        {selectedPrescriptionForSheet && (
+          <div className="prescription-printable-container">
+            {/* Clinic Letterhead */}
+            <div className="rx-print-clinic-header">
+              <div className="rx-print-brand-left">
+                <div className="rx-print-logo-circle">
+                  <Activity size={24} />
+                </div>
+                <div>
+                  <h2 className="rx-print-clinic-name">GLORY FLORENCE PHYSIOTHERAPY & REHABILITATION</h2>
+                  <p className="rx-print-clinic-sub">Clinical Physical Therapy • Spine Decompression • Sports Medicine</p>
+                  <p className="rx-print-clinic-addr">42 Healthcare Boulevard, Medical Enclave • Tel: +1 (555) 019-2800 • Web: www.gloryflorence.com</p>
+                </div>
+              </div>
+              <div className="rx-print-doc-badge">
+                <span className="rx-print-badge-title">OFFICIAL PATIENT EXERCISE PRESCRIPTION</span>
+                <span className="rx-print-badge-num">Rx ID: {selectedPrescriptionForSheet.id}</span>
+                <span className="rx-print-badge-date">Prescribed: {selectedPrescriptionForSheet.prescribedDate}</span>
+              </div>
+            </div>
+
+            <hr className="rx-print-hr" />
+
+            {/* Patient & Practitioner Details Box */}
+            <div className="rx-print-patient-meta-grid">
+              <div className="rx-meta-col">
+                <p><strong>Patient Name:</strong> {patient.name}</p>
+                <p><strong>Patient ID:</strong> {patient.id.toUpperCase()}</p>
+                <p><strong>Age / Gender:</strong> {calculateAge(patient.dateOfBirth)} Yrs / {patient.gender}</p>
+                <p><strong>Contact:</strong> {patient.phone}</p>
+              </div>
+              <div className="rx-meta-col">
+                <p><strong>Clinical Diagnosis:</strong> {selectedPrescriptionForSheet.diagnosis}</p>
+                <p><strong>Prescribing Clinician:</strong> {selectedPrescriptionForSheet.prescribedBy}</p>
+                <p><strong>Status:</strong> {selectedPrescriptionForSheet.status}</p>
+                <p><strong>Regimen Duration:</strong> {selectedPrescriptionForSheet.items[0]?.durationWeeks || 4} Weeks</p>
+              </div>
+            </div>
+
+            {/* Target Goal & Guidelines */}
+            {selectedPrescriptionForSheet.targetGoal && (
+              <div className="rx-print-goal-banner">
+                <strong>Primary Rehabilitation Goal:</strong> {selectedPrescriptionForSheet.targetGoal}
+              </div>
+            )}
+
+            {selectedPrescriptionForSheet.generalInstructions && (
+              <div className="rx-print-directions-box">
+                <strong>Patient Directions:</strong> {selectedPrescriptionForSheet.generalInstructions}
+              </div>
+            )}
+
+            {/* Numbered Exercises Routines */}
+            <div className="rx-print-exercises-block">
+              <h3 className="rx-print-section-title">Prescribed Exercises & Adherence Protocol</h3>
+              <div className="rx-print-items-list">
+                {selectedPrescriptionForSheet.items.map((item, idx) => {
+                  // Retrieve full instructions if available from library
+                  const libraryRef = availableExercises.find(e => e.id === item.exerciseId);
+                  return (
+                    <div key={item.id || idx} className="rx-print-item-card">
+                      <div className="rx-print-item-header">
+                        <span className="rx-print-number">#{idx + 1}</span>
+                        <div className="rx-print-title-area">
+                          <h4 className="rx-print-title">{item.exerciseTitle}</h4>
+                          <span className="rx-print-muscle">{item.targetMuscleGroup} ({item.category})</span>
+                        </div>
+                      </div>
+
+                      {/* Dosage Prescription Table */}
+                      <div className="rx-print-dosage-bar">
+                        <span className="dosage-item"><strong>Sets:</strong> {item.sets}</span>
+                        <span className="dosage-item"><strong>Reps:</strong> {item.reps}</span>
+                        {item.holdSec ? <span className="dosage-item"><strong>Hold:</strong> {item.holdSec} seconds</span> : null}
+                        <span className="dosage-item highlight"><strong>Frequency:</strong> {item.frequency}</span>
+                        <span className="dosage-item"><strong>Duration:</strong> {item.durationWeeks} Weeks</span>
+                      </div>
+
+                      {/* Instructions */}
+                      {libraryRef && libraryRef.instructions && libraryRef.instructions.length > 0 && (
+                        <div className="rx-print-instructions">
+                          <strong>Execution Steps:</strong>
+                          <ol className="rx-print-steps-list">
+                            {libraryRef.instructions.map((step, sIdx) => (
+                              <li key={sIdx}>{step}</li>
+                            ))}
+                          </ol>
+                        </div>
+                      )}
+
+                      {/* Precautions */}
+                      {item.notes && (
+                        <div className="rx-print-precautions">
+                          <strong>Clinician Precautions:</strong> {item.notes}
+                        </div>
+                      )}
+
+                      {/* 7-Day Adherence Tracking Row */}
+                      <div className="rx-print-tracker-row">
+                        <span className="tracker-label">Weekly Adherence Check:</span>
+                        <div className="tracker-days">
+                          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
+                            <div key={day} className="tracker-day-box">
+                              <span className="day-name">{day}</span>
+                              <div className="day-checkbox" />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Clinician Sign-off & Warnings Footer */}
+            <div className="rx-print-footer-grid">
+              <div className="rx-print-warning">
+                <p><strong>Patient Advisory:</strong> Discontinue any exercise immediately if you experience dizziness, sharp radiating pain, or joint swelling. Perform all movements in a controlled manner without holding your breath.</p>
+              </div>
+              <div className="rx-print-signature-box">
+                <div className="signature-line" />
+                <p className="signature-name">{selectedPrescriptionForSheet.prescribedBy}</p>
+                <p className="signature-title">Registered Physiotherapist & Clinical Supervisor</p>
+                <p className="signature-date">Date: {new Date().toLocaleDateString()}</p>
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="prescription-print-footer-actions">
+              <Button onClick={() => window.print()} variant="primary" iconLeft={<Printer size={16} />}>
+                Print Take-Home Routine
+              </Button>
+              <Button onClick={() => setIsTakeHomeSheetOpen(false)} variant="secondary">
                 Close Preview
               </Button>
             </div>

@@ -1,5 +1,5 @@
 import api from './api';
-import type { Patient, ClinicalAssessment, TreatmentPlan, TreatmentSession } from '../types';
+import type { Patient, ClinicalAssessment, TreatmentPlan, TreatmentSession, ExercisePrescription } from '../types';
 
 const STORAGE_KEY = 'gf_patients_db';
 
@@ -137,6 +137,59 @@ const MOCK_PATIENTS_SEED: Patient[] = [
         ]
       }
     ],
+    prescriptions: [
+      {
+        id: 'rx_1',
+        patientId: 'pat_1',
+        prescribedDate: '2026-08-28',
+        prescribedBy: 'Dr. Glory Physiotherapist',
+        diagnosis: 'L4-L5 Disc Herniation with Lumbar Radiculopathy',
+        status: 'Active',
+        targetGoal: 'Restore spinal extension tolerance and strengthen multifidus and transverse abdominis to stabilize lumbar spine.',
+        generalInstructions: 'Perform movements smoothly without breath-holding. If sharp pain or numbness radiates below the knee, discontinue that movement and notify your clinician.',
+        items: [
+          {
+            id: 'rxi_1',
+            exerciseId: 'ex_8',
+            exerciseTitle: 'Prone McKenzie Lumbar Extension Press-Up',
+            category: 'Mobility & Stretching',
+            targetMuscleGroup: 'Lumbar Spine & Core',
+            sets: 3,
+            reps: 10,
+            holdSec: 3,
+            frequency: '2x daily (Morning & Evening)',
+            durationWeeks: 4,
+            notes: 'Exhale completely at the top of the press-up. Keep hips relaxed on the mat.'
+          },
+          {
+            id: 'rxi_2',
+            exerciseId: 'ex_3',
+            exerciseTitle: 'Bird-Dog Core Stability (Quadruped Cross-Extension)',
+            category: 'Core Stability',
+            targetMuscleGroup: 'Lumbar Spine & Core',
+            sets: 3,
+            reps: 10,
+            holdSec: 4,
+            frequency: 'Once daily',
+            durationWeeks: 4,
+            notes: 'Maintain neutral spine; avoid hyperextending or rotating the pelvis.'
+          },
+          {
+            id: 'rxi_3',
+            exerciseId: 'ex_1',
+            exerciseTitle: 'Supine Pelvic Bridging with Neutral Spine',
+            category: 'Strengthening',
+            targetMuscleGroup: 'Pelvis & Hip',
+            sets: 3,
+            reps: 12,
+            holdSec: 5,
+            frequency: 'Once daily',
+            durationWeeks: 3,
+            notes: 'Squeeze glutes at top position. Ensure hamstrings do not cramp.'
+          }
+        ]
+      }
+    ],
     invoices: [
       {
         id: 'inv_1',
@@ -260,6 +313,46 @@ const MOCK_PATIENTS_SEED: Patient[] = [
             postSessionPain: 0,
             modalitiesConducted: ['Manual therapy & joint mobilization'],
             patientTolerance: 'Tolerated Well'
+          }
+        ]
+      }
+    ],
+    prescriptions: [
+      {
+        id: 'rx_2',
+        patientId: 'pat_2',
+        prescribedDate: '2025-02-12',
+        prescribedBy: 'Dr. Glory Doctor',
+        diagnosis: 'Supraspinatus Tendinopathy & Subacromial Impingement',
+        status: 'Completed',
+        targetGoal: 'Strengthen infraspinatus/teres minor and improve scapular retraction mechanics.',
+        generalInstructions: 'Warm up shoulder with gentle pendulums before starting resistance band work.',
+        items: [
+          {
+            id: 'rxi_4',
+            exerciseId: 'ex_6',
+            exerciseTitle: 'Rotator Cuff External Rotation (Side-Lying)',
+            category: 'Strengthening',
+            targetMuscleGroup: 'Shoulders & Rotator Cuff',
+            sets: 3,
+            reps: 12,
+            holdSec: 2,
+            frequency: '3x / week',
+            durationWeeks: 6,
+            notes: 'Keep elbow pinned to the flank using a folded towel.'
+          },
+          {
+            id: 'rxi_5',
+            exerciseId: 'ex_4',
+            exerciseTitle: 'Scapular Retraction with Resistance Band',
+            category: 'Strengthening',
+            targetMuscleGroup: 'Upper Back & Thoracic',
+            sets: 3,
+            reps: 15,
+            holdSec: 2,
+            frequency: 'Once daily',
+            durationWeeks: 6,
+            notes: 'Pinch shoulder blades down and back; do not elevate traps.'
           }
         ]
       }
@@ -614,6 +707,75 @@ export const patientService = {
 
       saveLocalStore(list);
       return newSession;
+    }
+  },
+
+  createPrescription: async (patientId: string, prescriptionData: Omit<ExercisePrescription, 'id'>): Promise<ExercisePrescription> => {
+    try {
+      const token = localStorage.getItem('gf_auth_token');
+      if (token && !token.startsWith('mock_')) {
+        const res = await api.post(`/patients/${patientId}/prescriptions`, prescriptionData);
+        return res.data;
+      }
+      throw new Error('Offline mode');
+    } catch {
+      console.warn(`[Offline Mode] Creating exercise prescription for patient ${patientId}`);
+      const list = getLocalStore();
+      const patient = list.find(p => p.id === patientId);
+      if (!patient) throw new Error('Patient not found');
+
+      const newRx: ExercisePrescription = {
+        ...prescriptionData,
+        id: `rx_${Date.now()}`,
+      };
+
+      if (!patient.prescriptions) patient.prescriptions = [];
+      patient.prescriptions.unshift(newRx);
+      saveLocalStore(list);
+      return newRx;
+    }
+  },
+
+  updatePrescriptionStatus: async (patientId: string, prescriptionId: string, status: ExercisePrescription['status']): Promise<ExercisePrescription> => {
+    try {
+      const token = localStorage.getItem('gf_auth_token');
+      if (token && !token.startsWith('mock_')) {
+        const res = await api.patch(`/patients/${patientId}/prescriptions/${prescriptionId}/status`, { status });
+        return res.data;
+      }
+      throw new Error('Offline mode');
+    } catch {
+      console.warn(`[Offline Mode] Updating prescription ${prescriptionId} status to ${status}`);
+      const list = getLocalStore();
+      const patient = list.find(p => p.id === patientId);
+      if (!patient || !patient.prescriptions) throw new Error('Patient or prescriptions not found');
+
+      const rx = patient.prescriptions.find(r => r.id === prescriptionId);
+      if (!rx) throw new Error('Prescription not found');
+
+      rx.status = status;
+      saveLocalStore(list);
+      return rx;
+    }
+  },
+
+  deletePrescription: async (patientId: string, prescriptionId: string): Promise<boolean> => {
+    try {
+      const token = localStorage.getItem('gf_auth_token');
+      if (token && !token.startsWith('mock_')) {
+        await api.delete(`/patients/${patientId}/prescriptions/${prescriptionId}`);
+        return true;
+      }
+      throw new Error('Offline mode');
+    } catch {
+      console.warn(`[Offline Mode] Deleting prescription ${prescriptionId} from patient ${patientId}`);
+      const list = getLocalStore();
+      const patient = list.find(p => p.id === patientId);
+      if (!patient || !patient.prescriptions) return false;
+
+      patient.prescriptions = patient.prescriptions.filter(r => r.id !== prescriptionId);
+      saveLocalStore(list);
+      return true;
     }
   }
 };

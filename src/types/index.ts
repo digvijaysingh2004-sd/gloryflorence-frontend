@@ -139,6 +139,7 @@ export interface Patient {
   appointments?: Appointment[];
   assessments?: ClinicalAssessment[];
   treatmentPlans?: TreatmentPlan[];
+  prescriptions?: ExercisePrescription[];
   invoices?: Invoice[];
   vitals?: {
     bloodPressure?: string;
@@ -147,6 +148,32 @@ export interface Patient {
     heightCm?: number;
     updatedAt?: string;
   };
+}
+
+export interface PrescribedExerciseItem {
+  id: string;
+  exerciseId: string;
+  exerciseTitle: string;
+  category: string;
+  targetMuscleGroup: string;
+  sets: number;
+  reps: number;
+  holdSec?: number;
+  frequency: string; // e.g., '2x daily', 'Once daily', '3x / week'
+  durationWeeks: number; // e.g., 4 weeks
+  notes?: string; // specific therapist instructions / precautions
+}
+
+export interface ExercisePrescription {
+  id: string;
+  patientId: string;
+  prescribedDate: string;
+  prescribedBy: string;
+  diagnosis: string;
+  status: 'Active' | 'Completed' | 'Suspended';
+  targetGoal: string;
+  generalInstructions?: string;
+  items: PrescribedExerciseItem[];
 }
 
 export interface TreatmentType {

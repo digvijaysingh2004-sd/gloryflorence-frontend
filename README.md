@@ -1,6 +1,6 @@
 # 🏥 Glory Florence Physiotherapy Management System — Frontend
 
-[![React](https://img.shields.io/badge/React-19.2.8-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![React](https://img.shields.io/badge/React-19.2.8-61DAFB?logo=react&logoColor=blac](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-8.2-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
 [![React Router](https://img.shields.io/badge/React_Router-v7-CA4245?logo=reactrouter&logoColor=white)](https://reactrouter.com/)
@@ -15,6 +15,7 @@ Developed with **React 19**, **TypeScript**, and **Vite**, featuring a slate-tea
 ## 🌟 Key Features
 
 ### 👥 Comprehensive Patient Management (EHR)
+
 - **Patient Directory**: Real-time filtering, search by name/phone/email, and status tags (`Active` / `Inactive`).
 - **360° Patient Dossier**:
   - **Overview & Vitals**: Blood pressure, heart rate, height, weight, BMI, and emergency contact details.
@@ -23,22 +24,26 @@ Developed with **React 19**, **TypeScript**, and **Vite**, featuring a slate-tea
   - **History & Sessions**: Tabular view of all past appointments, clinical assessments, and active treatment plans.
 
 ### 📅 Smart Appointment Scheduling
+
 - **Dual View Modes**: Switch seamlessly between a visual **Day Timeline Schedule** and an interactive **Table / List View**.
 - **Conflict Prevention**: Built-in therapist conflict checking prevents overlapping bookings for the same practitioner.
 - **Status Lifecycle**: Track appointments across `Scheduled`, `Completed`, `Cancelled`, and `No Show` statuses.
 - **Quick Booking**: Modals with pre-populated patient and therapist selectors, duration calculation, and fee tracking.
 
 ### 🩺 Clinical Assessment & Treatment Plans
+
 - **Visual Pain Assessment**: Interactive **VAS (Visual Analogue Scale) 0–10** pain slider with dynamic color grading and descriptor mapping (Sharp, Dull Aching, Burning, Throbbing, Radiating, Stiffness).
 - **Physical Examination**: Systematic inputs for Range of Motion (ROM) findings, posture and gait assessment, functional limitations, and clinical diagnosis.
 - **Dynamic Treatment Plans**: Prescribe multi-session treatment packages with modality bundles, target dates, and frequency.
 - **Session Check-In & Delta Tracking**: Record pre-session vs. post-session pain scores to measure patient recovery delta and tolerance levels.
 
 ### 🏋️ Clinical Exercise & Treatment Library
+
 - **Treatment Modalities**: Categorized catalog covering Manual Therapy, Electrotherapy, Hydrotherapy, Exercise Therapy, and Specialized Rehabilitation.
 - **Exercise Directory**: Filterable database by target muscle group, difficulty level, sets/repetitions, hold times, and precautions.
 
 ### 🔐 Role-Based Access Control (RBAC)
+
 - Fine-grained permission guards across **7 roles**:
   - `superadmin` / `admin`
   - `physiotherapist`
@@ -50,6 +55,7 @@ Developed with **React 19**, **TypeScript**, and **Vite**, featuring a slate-tea
 - Unauthorized access attempts are intercepted and routed to a dedicated **403 Access Denied** page.
 
 ### ⚡ Hybrid Connectivity (Live REST API + Offline Fallback)
+
 - Fully functional in offline/demo mode backed by browser local storage and in-memory mock datasets.
 - Automatically connects to live REST endpoints via Axios with JWT token interceptors and auto-logout on `401 Unauthorized`.
 
@@ -57,16 +63,16 @@ Developed with **React 19**, **TypeScript**, and **Vite**, featuring a slate-tea
 
 ## 🏗️ Tech Stack
 
-| Layer | Technology |
-| :--- | :--- |
-| **Framework** | [React 19](https://react.dev/) |
-| **Language** | [TypeScript](https://www.typescriptlang.org/) |
-| **Build & Bundler** | [Vite 8](https://vite.dev/) |
-| **Routing** | [React Router DOM v7](https://reactrouter.com/) |
-| **HTTP Client** | [Axios](https://axios-http.com/) with interceptors |
-| **Icons** | [Lucide React](https://lucide.dev/) |
-| **Linter** | [Oxlint](https://oxc.rs/) |
-| **Styling** | Modular Vanilla CSS with CSS custom properties (Design System) |
+| Layer               | Technology                                                     |
+| :------------------ | :------------------------------------------------------------- |
+| **Framework**       | [React 19](https://react.dev/)                                 |
+| **Language**        | [TypeScript](https://www.typescriptlang.org/)                  |
+| **Build & Bundler** | [Vite 8](https://vite.dev/)                                    |
+| **Routing**         | [React Router DOM v7](https://reactrouter.com/)                |
+| **HTTP Client**     | [Axios](https://axios-http.com/) with interceptors             |
+| **Icons**           | [Lucide React](https://lucide.dev/)                            |
+| **Linter**          | [Oxlint](https://oxc.rs/)                                      |
+| **Styling**         | Modular Vanilla CSS with CSS custom properties (Design System) |
 
 ---
 
@@ -128,37 +134,47 @@ Frontend/
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - **Node.js**: v18.0.0 or higher
 - **npm**: v9.0.0 or higher (or `pnpm` / `yarn`)
 
 ### 1. Clone the Repository
+
 ```bash
 git clone https://github.com/digvijaysingh2004-sd/gloryflorence-frontend.git
 cd gloryflorence-frontend
 ```
 
 ### 2. Install Dependencies
+
 ```bash
 npm install
 ```
 
 ### 3. Configure Environment Variables
+
 Copy `.env.example` to create your local `.env`:
+
 ```bash
 cp .env.example .env
 ```
 
 Open `.env` and verify your backend API base URL:
+
 ```env
 VITE_API_BASE_URL=http://localhost:5000/api
 ```
-*(Note: If the backend server is offline, the app automatically switches to offline mock mode with built-in demo data).*
+
+_(Note: If the backend server is offline, the app automatically switches to offline mock mode with built-in demo data)._
 
 ### 4. Run Development Server
+
 ```bash
 npm run dev
 ```
+
 Open your browser and navigate to:
+
 ```
 http://localhost:5173
 ```
@@ -169,26 +185,26 @@ http://localhost:5173
 
 When using mock/offline authentication, you can sign in with any of the following role presets:
 
-| Role | Email | Password | Access Level |
-| :--- | :--- | :--- | :--- |
-| **Super Admin** | `superadmin@gloryflorence.com` | `admin123` | Full access across all modules |
-| **Admin** | `admin@gloryflorence.com` | `admin123` | Full administrative & clinical access |
-| **Physiotherapist** | `therapist@gloryflorence.com` | `admin123` | Patients, Appointments, Clinical Treatments & Assessments |
-| **Doctor** | `doctor@gloryflorence.com` | `admin123` | Patients, Appointments, Clinical Treatments & Assessments |
-| **Receptionist** | `receptionist@gloryflorence.com` | `admin123` | Patients registry & Appointment booking |
-| **Accountant** | `accountant@gloryflorence.com` | `admin123` | Billing & Invoicing |
-| **Patient** | `patient@gloryflorence.com` | `admin123` | Personal Appointments & Records |
+| Role                | Email                            | Password   | Access Level                                              |
+| :------------------ | :------------------------------- | :--------- | :-------------------------------------------------------- |
+| **Super Admin**     | `superadmin@gloryflorence.com`   | `admin123` | Full access across all modules                            |
+| **Admin**           | `admin@gloryflorence.com`        | `admin123` | Full administrative & clinical access                     |
+| **Physiotherapist** | `therapist@gloryflorence.com`    | `admin123` | Patients, Appointments, Clinical Treatments & Assessments |
+| **Doctor**          | `doctor@gloryflorence.com`       | `admin123` | Patients, Appointments, Clinical Treatments & Assessments |
+| **Receptionist**    | `receptionist@gloryflorence.com` | `admin123` | Patients registry & Appointment booking                   |
+| **Accountant**      | `accountant@gloryflorence.com`   | `admin123` | Billing & Invoicing                                       |
+| **Patient**         | `patient@gloryflorence.com`      | `admin123` | Personal Appointments & Records                           |
 
 ---
 
 ## 📜 Available Scripts
 
-| Command | Description |
-| :--- | :--- |
-| `npm run dev` | Starts the Vite development server with Hot Module Replacement (HMR). |
-| `npm run build` | Runs TypeScript type checking (`tsc -b`) and produces an optimized production bundle in `dist/`. |
-| `npm run preview` | Locally serves the production build from `dist/` for verification. |
-| `npm run lint` | Runs [Oxlint](https://oxc.rs/) for blazing-fast code quality and linting checks. |
+| Command           | Description                                                                                      |
+| :---------------- | :----------------------------------------------------------------------------------------------- |
+| `npm run dev`     | Starts the Vite development server with Hot Module Replacement (HMR).                            |
+| `npm run build`   | Runs TypeScript type checking (`tsc -b`) and produces an optimized production bundle in `dist/`. |
+| `npm run preview` | Locally serves the production build from `dist/` for verification.                               |
+| `npm run lint`    | Runs [Oxlint](https://oxc.rs/) for blazing-fast code quality and linting checks.                 |
 
 ---
 
