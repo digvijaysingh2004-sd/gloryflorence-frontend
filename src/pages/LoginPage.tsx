@@ -24,9 +24,9 @@ export const LoginPage: React.FC = () => {
   const validate = () => {
     const newErrors: { email?: string; password?: string } = {};
 
-    if (!email) {
-      newErrors.email = 'Email address is required';
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
+    if (!email.trim()) {
+      newErrors.email = 'Username or email address is required';
+    } else if (email.includes('@') && !/\S+@\S+\.\S+/.test(email)) {
       newErrors.email = 'Please enter a valid email address';
     }
 
@@ -50,8 +50,8 @@ export const LoginPage: React.FC = () => {
       if (success) {
         navigate(redirectPath, { replace: true });
       }
-    } catch (err) {
-      // Errors are handled inside AuthContext via toast notifications
+    } catch {
+      // Handled inside AuthContext
     } finally {
       setIsSubmitting(false);
     }
@@ -66,9 +66,9 @@ export const LoginPage: React.FC = () => {
 
       <form className="login-form" onSubmit={handleSubmit}>
         <Input
-          label="Email Address"
-          type="email"
-          placeholder="e.g. admin@gloryflorence.com"
+          label="Username or Email"
+          type="text"
+          placeholder="e.g. therapist or admin@gloryflorence.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           error={errors.email}
@@ -122,11 +122,15 @@ export const LoginPage: React.FC = () => {
         </Button>
 
         <div className="login-credentials-helper">
-          💡 Demo Credentials:
+          💡 <strong>Backend Seed Accounts (.NET 8):</strong>
           <br />
-          Email: <strong>admin@gloryflorence.com</strong>
+          Therapist: <code>therapist</code> / <code>Therapist123!</code>
           <br />
-          Password: <strong>admin123</strong>
+          Admin: <code>admin</code> / <code>Admin123!</code>
+          <br />
+          <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>
+            (Or offline demo: <code>admin@gloryflorence.com</code> / <code>admin123</code>)
+          </span>
         </div>
       </form>
     </div>

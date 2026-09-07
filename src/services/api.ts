@@ -23,16 +23,43 @@ api.interceptors.request.use(
   }
 );
 
-// Response Interceptor: Capture global errors
+// Response Interceptor: Automatically unwrap .NET 8 ApiResponse<T> envelopes & capture global errors
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Check if response has standard backend envelope: { success, message, data, errors }
+    if (
+      response.data &&
+      typeof response.data === 'object' &&
+      'success' in response.data &&
+      'data' in response.data
+    ) {
+      const payload = response.data.data;
+      // Preserve full envelope on response object for callers needing metadata/pagination
+      (response as any).envelope = response.data;
+      if (payload !== undefined && payload !== null) {
+        response.data = payload;
+      }
+    }
+    return response;
+  },
   (error) => {
     const status = error.response?.status;
-    const errorMessage =
-      error.response?.data?.message ||
-      error.response?.data?.error ||
-      error.message ||
-      'An unexpected error occurred';
+    const errorData = error.response?.data;
+    let errorMessage = '';
+
+    if (errorData) {
+      if (Array.isArray(errorData.errors) && errorData.errors.length > 0) {
+        errorMessage = errorData.errors.join('; ');
+      } else if (errorData.message) {
+        errorMessage = errorData.message;
+      } else if (errorData.error) {
+        errorMessage = errorData.error;
+      }
+    }
+
+    if (!errorMessage) {
+      errorMessage = error.message || 'An unexpected error occurred';
+    }
 
     if (status === 401) {
       // Clear local session storage

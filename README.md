@@ -162,8 +162,11 @@ cp .env.example .env
 Open `.env` and verify your backend API base URL:
 
 ```env
-VITE_API_BASE_URL=http://localhost:5000/api
+# .NET 8 Web API backend (HTTP: http://localhost:5222/api | HTTPS: https://localhost:7145/api)
+VITE_API_BASE_URL=http://localhost:5222/api
 ```
+
+> 📖 **Backend API Documentation**: For complete endpoint contracts, request/response models, and status codes, see [API_DOCUMENTATION.md](file:///d:/Digvijay/Projects/Glory%20Florence%20Mangement%20System/Frontend/API_DOCUMENTATION.md).
 
 _(Note: If the backend server is offline, the app automatically switches to offline mock mode with built-in demo data)._
 
@@ -181,19 +184,23 @@ http://localhost:5173
 
 ---
 
-## 🔑 Demo & Testing Credentials
+## 🔑 Default Accounts & Testing Credentials
 
-When using mock/offline authentication, you can sign in with any of the following role presets:
+The application supports both live authentication against the .NET 8 backend API and instant offline mock fallback:
 
-| Role                | Email                            | Password   | Access Level                                              |
-| :------------------ | :------------------------------- | :--------- | :-------------------------------------------------------- |
-| **Super Admin**     | `superadmin@gloryflorence.com`   | `admin123` | Full access across all modules                            |
-| **Admin**           | `admin@gloryflorence.com`        | `admin123` | Full administrative & clinical access                     |
-| **Physiotherapist** | `therapist@gloryflorence.com`    | `admin123` | Patients, Appointments, Clinical Treatments & Assessments |
-| **Doctor**          | `doctor@gloryflorence.com`       | `admin123` | Patients, Appointments, Clinical Treatments & Assessments |
-| **Receptionist**    | `receptionist@gloryflorence.com` | `admin123` | Patients registry & Appointment booking                   |
-| **Accountant**      | `accountant@gloryflorence.com`   | `admin123` | Billing & Invoicing                                       |
-| **Patient**         | `patient@gloryflorence.com`      | `admin123` | Personal Appointments & Records                           |
+### Backend Seed Accounts (.NET 8 Web API)
+| Username | Role | Password | Access Level |
+| :--- | :--- | :--- | :--- |
+| `admin` | **SuperAdmin** | `Admin123!` | Full cross-module administration |
+| `clinicadmin` | **Admin** | `Admin123!` | Clinic operations & clinical access |
+| `therapist` | **Physiotherapist** | `Therapist123!` | Patients, Appointments, Assessments, Treatments & Prescriptions |
+| `doctor` | **Doctor** | `Doctor123!` | Patients, Appointments, Assessments & Prescriptions |
+| `receptionist` | **Receptionist** | `Receptionist123!` | Patient intake & Appointment scheduling |
+| `accountant` | **Accountant** | `Accountant123!` | Billing & Invoicing |
+| `patientuser` | **Patient** | `Patient123!` | Personal rehabilitation records |
+
+### Offline / Mock Email Presets
+You can also sign in with any of the demo emails (e.g. `therapist@gloryflorence.com`, `admin@gloryflorence.com`) using password `admin123`.
 
 ---
 
