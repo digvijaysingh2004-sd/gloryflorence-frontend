@@ -199,6 +199,7 @@ export interface Exercise {
   defaultHoldSec?: number;
   instructions: string[];
   precautions?: string;
+  videoUrl?: string;
   imageUrl?: string;
 }
 

@@ -286,6 +286,43 @@ const saveExercisesStore = (data: Exercise[]) => {
   localStorage.setItem(STORAGE_KEY_EXERCISES, JSON.stringify(data));
 };
 
+export const mapBackendTreatmentType = (dto: any): TreatmentType => {
+  if (!dto) return {} as TreatmentType;
+  return {
+    id: String(dto.id),
+    name: dto.name || '',
+    category: dto.category || (dto.categoryName as any) || 'Manual Therapy',
+    description: dto.description || '',
+    durationMinutes: dto.durationMinutes || dto.defaultDurationMinutes || 45,
+    defaultPrice: dto.defaultPrice !== undefined ? dto.defaultPrice : 50,
+    status: dto.status || (dto.isActive === false ? 'Inactive' : 'Active'),
+    requiredEquipment: dto.requiredEquipment || [],
+  };
+};
+
+export const mapBackendExercise = (dto: any): Exercise => {
+  if (!dto) return {} as Exercise;
+  return {
+    id: String(dto.id),
+    title: dto.title || dto.name || 'Exercise',
+    category: dto.category || (dto.categoryName as any) || 'Strengthening',
+    targetMuscleGroup: dto.targetMuscleGroup || 'General Core & Spine',
+    difficulty: dto.difficulty || 'Beginner',
+    equipment: dto.equipment || 'None / Mat',
+    defaultSets: dto.defaultSets || 3,
+    defaultReps: dto.defaultReps || 10,
+    defaultHoldSec: dto.defaultHoldSec || 3,
+    instructions: Array.isArray(dto.instructions)
+      ? dto.instructions
+      : typeof dto.instructions === 'string'
+      ? [dto.instructions]
+      : ['Follow instructions provided by your therapist.'],
+    precautions: dto.precautions || '',
+    videoUrl: dto.videoUrl || '',
+    imageUrl: dto.imageUrl || '',
+  };
+};
+
 export const treatmentService = {
   // Treatment Types API
   getAllTreatments: async (filters?: {
@@ -297,7 +334,25 @@ export const treatmentService = {
       const token = localStorage.getItem('gf_auth_token');
       if (token && !token.startsWith('mock_')) {
         const response = await api.get('/treatment-types', { params: filters });
-        return response.data;
+        const rawList = Array.isArray(response.data)
+          ? response.data
+          : (response.data?.items || []);
+        let mapped: TreatmentType[] = rawList.map(mapBackendTreatmentType);
+        if (filters?.category && filters.category !== 'All') {
+          mapped = mapped.filter((t) => t.category.toLowerCase() === filters.category?.toLowerCase());
+        }
+        if (filters?.status && filters.status !== 'All') {
+          mapped = mapped.filter((t) => t.status === filters.status);
+        }
+        if (filters?.search) {
+          const q = filters.search.toLowerCase();
+          mapped = mapped.filter(
+            (t) =>
+              t.name.toLowerCase().includes(q) ||
+              t.description.toLowerCase().includes(q)
+          );
+        }
+        return mapped;
       }
       throw new Error('Offline mode');
     } catch {
@@ -328,7 +383,7 @@ export const treatmentService = {
       const token = localStorage.getItem('gf_auth_token');
       if (token && !token.startsWith('mock_')) {
         const response = await api.get(`/treatment-types/${id}`);
-        return response.data;
+        return mapBackendTreatmentType(response.data);
       }
       throw new Error('Offline mode');
     } catch {
@@ -406,7 +461,30 @@ export const treatmentService = {
       const token = localStorage.getItem('gf_auth_token');
       if (token && !token.startsWith('mock_')) {
         const response = await api.get('/exercises', { params: filters });
-        return response.data;
+        const rawList = Array.isArray(response.data)
+          ? response.data
+          : (response.data?.items || []);
+        let mapped: Exercise[] = rawList.map(mapBackendExercise);
+        if (filters?.category && filters.category !== 'All') {
+          mapped = mapped.filter((e) => e.category.toLowerCase() === filters.category?.toLowerCase());
+        }
+        if (filters?.difficulty && filters.difficulty !== 'All') {
+          mapped = mapped.filter((e) => e.difficulty === filters.difficulty);
+        }
+        if (filters?.muscleGroup && filters.muscleGroup !== 'All') {
+          mapped = mapped.filter((e) => e.targetMuscleGroup.toLowerCase().includes(filters.muscleGroup!.toLowerCase()));
+        }
+        if (filters?.search) {
+          const q = filters.search.toLowerCase();
+          mapped = mapped.filter(
+            (e) =>
+              e.title.toLowerCase().includes(q) ||
+              e.targetMuscleGroup.toLowerCase().includes(q) ||
+              e.equipment.toLowerCase().includes(q) ||
+              e.category.toLowerCase().includes(q)
+          );
+        }
+        return mapped;
       }
       throw new Error('Offline mode');
     } catch {
@@ -441,7 +519,7 @@ export const treatmentService = {
       const token = localStorage.getItem('gf_auth_token');
       if (token && !token.startsWith('mock_')) {
         const response = await api.get(`/exercises/${id}`);
-        return response.data;
+        return mapBackendExercise(response.data);
       }
       throw new Error('Offline mode');
     } catch {

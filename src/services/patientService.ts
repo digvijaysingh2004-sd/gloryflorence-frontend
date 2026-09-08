@@ -445,13 +445,64 @@ const saveLocalStore = (patients: Patient[]) => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(patients));
 };
 
+export const mapBackendPatient = (dto: any): Patient => {
+  if (!dto) return {} as Patient;
+  const fullName = dto.name || `${dto.firstName || ''} ${dto.lastName || ''}`.trim() || 'Patient';
+  return {
+    id: String(dto.id),
+    name: fullName,
+    email: dto.email || '',
+    phone: dto.phoneNumber || dto.phone || '',
+    gender: dto.gender || 'Other',
+    dateOfBirth: dto.dateOfBirth ? dto.dateOfBirth.split('T')[0] : '',
+    bloodGroup: dto.bloodGroup || 'O+',
+    address: dto.address || '',
+    city: dto.city || '',
+    state: dto.state || '',
+    country: dto.country || '',
+    emergencyContactName: dto.emergencyContactName || '',
+    emergencyContactPhone: dto.emergencyContactPhone || '',
+    registrationDate: dto.registrationDate || dto.createdAt ? (dto.registrationDate || dto.createdAt).split('T')[0] : new Date().toISOString().split('T')[0],
+    status: dto.status || (dto.isActive === false ? 'Inactive' : 'Active'),
+    vitals: dto.vitals || {
+      bloodPressure: '120/80',
+      heartRate: 72,
+      weightKg: 70,
+      heightCm: 170,
+      updatedAt: new Date().toISOString(),
+    },
+    medicalHistory: Array.isArray(dto.medicalHistory)
+      ? dto.medicalHistory
+      : typeof dto.medicalHistory === 'string' && dto.medicalHistory
+      ? [{ id: 'mh_1', condition: dto.medicalHistory, diagnosedDate: new Date().toISOString().split('T')[0], severity: 'Moderate', status: 'Active' }]
+      : [],
+    documents: dto.documents || [],
+    appointments: dto.appointments || [],
+    treatmentPlans: dto.treatmentPlans || [],
+    invoices: dto.invoices || [],
+  };
+};
+
 export const patientService = {
   getAll: async (filters?: { search?: string; status?: string; gender?: string }): Promise<Patient[]> => {
     try {
       const token = localStorage.getItem('gf_auth_token');
       if (token && !token.startsWith('mock_')) {
         const response = await api.get('/patients', { params: filters });
-        return response.data;
+        const rawList = Array.isArray(response.data) ? response.data : (response.data?.items || []);
+        let mapped: Patient[] = rawList.map(mapBackendPatient);
+        if (filters?.search) {
+          const lower = filters.search.toLowerCase();
+          mapped = mapped.filter(p =>
+            p.name.toLowerCase().includes(lower) ||
+            p.email.toLowerCase().includes(lower) ||
+            p.phone.includes(lower)
+          );
+        }
+        if (filters?.gender && filters.gender !== 'All') {
+          mapped = mapped.filter(p => p.gender.toLowerCase() === filters.gender?.toLowerCase());
+        }
+        return mapped;
       }
       throw new Error('Offline mode active');
     } catch {
@@ -484,7 +535,7 @@ export const patientService = {
       const token = localStorage.getItem('gf_auth_token');
       if (token && !token.startsWith('mock_')) {
         const response = await api.get(`/patients/${id}`);
-        return response.data;
+        return mapBackendPatient(response.data);
       }
       throw new Error('Offline mode active');
     } catch {
@@ -500,8 +551,21 @@ export const patientService = {
     try {
       const token = localStorage.getItem('gf_auth_token');
       if (token && !token.startsWith('mock_')) {
-        const response = await api.post('/patients', patientData);
-        return response.data;
+        const nameParts = (patientData.name || '').trim().split(' ');
+        const firstName = nameParts[0] || 'Patient';
+        const lastName = nameParts.slice(1).join(' ') || 'User';
+        const payload = {
+          firstName,
+          lastName,
+          dateOfBirth: patientData.dateOfBirth ? new Date(patientData.dateOfBirth).toISOString() : new Date('1990-01-01').toISOString(),
+          gender: patientData.gender || 'Male',
+          email: patientData.email || '',
+          phoneNumber: patientData.phone || '',
+          address: patientData.address || '',
+          medicalHistory: patientData.medicalHistory?.map(m => m.condition).join('; ') || '',
+        };
+        const response = await api.post('/patients', payload);
+        return mapBackendPatient(response.data);
       }
       throw new Error('Offline mode active');
     } catch {
@@ -534,8 +598,21 @@ export const patientService = {
     try {
       const token = localStorage.getItem('gf_auth_token');
       if (token && !token.startsWith('mock_')) {
-        const response = await api.put(`/patients/${id}`, patientData);
-        return response.data;
+        const nameParts = (patientData.name || '').trim().split(' ');
+        const firstName = nameParts[0] || 'Patient';
+        const lastName = nameParts.slice(1).join(' ') || 'User';
+        const payload = {
+          firstName,
+          lastName,
+          dateOfBirth: patientData.dateOfBirth ? new Date(patientData.dateOfBirth).toISOString() : undefined,
+          gender: patientData.gender,
+          email: patientData.email,
+          phoneNumber: patientData.phone,
+          address: patientData.address,
+          medicalHistory: patientData.medicalHistory?.map(m => m.condition).join('; '),
+        };
+        const response = await api.put(`/patients/${id}`, payload);
+        return mapBackendPatient(response.data);
       }
       throw new Error('Offline mode active');
     } catch {

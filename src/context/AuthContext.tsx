@@ -10,6 +10,19 @@ interface AuthContextProps extends AuthState {
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
+const normalizeRole = (roleStr?: string): User['role'] => {
+  if (!roleStr) return 'receptionist';
+  const clean = roleStr.toLowerCase().replace(/[\s_-]+/g, '');
+  if (clean === 'superadmin') return 'superadmin';
+  if (clean === 'admin' || clean === 'clinicadmin') return 'admin';
+  if (clean === 'physiotherapist' || clean === 'therapist') return 'physiotherapist';
+  if (clean === 'doctor') return 'doctor';
+  if (clean === 'receptionist') return 'receptionist';
+  if (clean === 'accountant') return 'accountant';
+  if (clean === 'patient') return 'patient';
+  return 'receptionist';
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, setState] = useState<AuthState>({
     user: null,
@@ -52,7 +65,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 id: String(raw.id),
                 email: raw.email || '',
                 name: raw.name || `${raw.firstName || ''} ${raw.lastName || ''}`.trim() || raw.username || 'User',
-                role: (raw.role ? raw.role.toLowerCase() : 'receptionist') as User['role'],
+                role: normalizeRole(raw.role),
               };
               localStorage.setItem('gf_auth_user', JSON.stringify(freshUser));
               setState({
@@ -106,7 +119,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         id: String(rawUser.id),
         email: rawUser.email || (emailOrUsername.includes('@') ? emailOrUsername : `${emailOrUsername}@gloryflorence.com`),
         name: rawUser.name || `${rawUser.firstName || ''} ${rawUser.lastName || ''}`.trim() || rawUser.username || emailOrUsername,
-        role: (rawUser.role ? rawUser.role.toLowerCase() : 'receptionist') as User['role'],
+        role: normalizeRole(rawUser.role),
       };
 
       localStorage.setItem('gf_auth_token', token);

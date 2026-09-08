@@ -204,6 +204,51 @@ export interface ConflictCheckResult {
   conflictingAppointment?: Appointment;
 }
 
+export const formatBackendTime = (timeStr?: string): string => {
+  if (!timeStr) return '09:00 AM';
+  if (timeStr.includes('AM') || timeStr.includes('PM')) return timeStr;
+  const parts = timeStr.split(':');
+  const hours = parseInt(parts[0], 10) || 0;
+  const minutes = parseInt(parts[1], 10) || 0;
+  const period = hours >= 12 ? 'PM' : 'AM';
+  const hours12 = hours % 12 || 12;
+  const padMin = minutes < 10 ? `0${minutes}` : minutes;
+  const padHour = hours12 < 10 ? `0${hours12}` : hours12;
+  return `${padHour}:${padMin} ${period}`;
+};
+
+export const timeTo24h = (timeStr: string): string => {
+  const mins = timeToMinutes(timeStr);
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  const padH = h < 10 ? `0${h}` : h;
+  const padM = m < 10 ? `0${m}` : m;
+  return `${padH}:${padM}:00`;
+};
+
+export const mapBackendAppointment = (dto: any): Appointment => {
+  if (!dto) return {} as Appointment;
+  const dateStr = dto.appointmentDate ? dto.appointmentDate.split('T')[0] : (dto.date || getTodayDateStr());
+  const timeStr = dto.startTime ? formatBackendTime(dto.startTime) : (dto.time || '10:00 AM');
+  return {
+    id: String(dto.id),
+    patientId: dto.patientId ? String(dto.patientId) : undefined,
+    patientName: dto.patientName || 'Patient',
+    patientPhone: dto.patientPhoneNumber || dto.patientPhone || '',
+    patientEmail: dto.patientEmail || '',
+    therapistId: dto.physiotherapistId ? String(dto.physiotherapistId) : undefined,
+    therapistName: dto.physiotherapistName || dto.therapistName || 'Dr. Glory Physiotherapist',
+    date: dateStr,
+    time: timeStr,
+    durationMinutes: dto.durationMinutes || 45,
+    status: dto.status || 'Scheduled',
+    type: dto.appointmentTypeName || dto.type || 'Physiotherapy Session',
+    notes: dto.notes || dto.reason || '',
+    room: dto.room || 'Room 102 (Manual Therapy)',
+    fee: dto.fee || 65,
+  };
+};
+
 export const appointmentService = {
   getTherapists: (): string[] => THERAPISTS_LIST,
   getAppointmentTypes: (): string[] => APPOINTMENT_TYPES,
@@ -220,21 +265,20 @@ export const appointmentService = {
     const newStart = timeToMinutes(timeStr);
     const newEnd = newStart + durationMinutes;
 
-    for (const apt of list) {
-      if (excludeId && apt.id === excludeId) continue;
-      if (apt.status === 'Cancelled') continue;
-      if (apt.therapistName === therapistName && apt.date === date) {
-        const existingStart = timeToMinutes(apt.time);
-        const existingEnd = existingStart + (apt.durationMinutes || 45);
+    const conflict = list.find((a) => {
+      if (excludeId && a.id === excludeId) return false;
+      if (a.therapistName !== therapistName || a.date !== date) return false;
+      if (a.status === 'Cancelled') return false;
 
-        // Check time overlap: StartA < EndB && EndA > StartB
-        if (newStart < existingEnd && newEnd > existingStart) {
-          return {
-            hasConflict: true,
-            conflictingAppointment: apt,
-          };
-        }
-      }
+      const aptStart = timeToMinutes(a.time);
+      const aptEnd = aptStart + (a.durationMinutes || 45);
+
+      // Overlap condition: (StartA < EndB) and (EndA > StartB)
+      return newStart < aptEnd && newEnd > aptStart;
+    });
+
+    if (conflict) {
+      return { hasConflict: true, conflictingAppointment: conflict };
     }
     return { hasConflict: false };
   },
@@ -249,7 +293,37 @@ export const appointmentService = {
       const token = localStorage.getItem('gf_auth_token');
       if (token && !token.startsWith('mock_')) {
         const response = await api.get('/appointments', { params: filters });
-        return response.data;
+        const rawList = Array.isArray(response.data)
+          ? response.data
+          : (response.data?.items || []);
+        let mapped: Appointment[] = rawList.map(mapBackendAppointment);
+
+        if (filters?.date) {
+          mapped = mapped.filter((a) => a.date === filters.date);
+        }
+        if (filters?.therapist && filters.therapist !== 'All') {
+          mapped = mapped.filter((a) => a.therapistName === filters.therapist);
+        }
+        if (filters?.status && filters.status !== 'All') {
+          mapped = mapped.filter((a) => a.status === filters.status);
+        }
+        if (filters?.search) {
+          const q = filters.search.toLowerCase();
+          mapped = mapped.filter(
+            (a) =>
+              a.patientName?.toLowerCase().includes(q) ||
+              a.therapistName.toLowerCase().includes(q) ||
+              a.type.toLowerCase().includes(q) ||
+              a.notes?.toLowerCase().includes(q)
+          );
+        }
+
+        mapped.sort((a, b) => {
+          if (a.date !== b.date) return a.date.localeCompare(b.date);
+          return timeToMinutes(a.time) - timeToMinutes(b.time);
+        });
+
+        return mapped;
       }
       throw new Error('Offline mode');
     } catch {
@@ -290,7 +364,7 @@ export const appointmentService = {
       const token = localStorage.getItem('gf_auth_token');
       if (token && !token.startsWith('mock_')) {
         const response = await api.get(`/appointments/${id}`);
-        return response.data;
+        return mapBackendAppointment(response.data);
       }
       throw new Error('Offline mode');
     } catch {
@@ -305,8 +379,25 @@ export const appointmentService = {
     try {
       const token = localStorage.getItem('gf_auth_token');
       if (token && !token.startsWith('mock_')) {
-        const response = await api.post('/appointments', appointmentData);
-        return response.data;
+        const duration = appointmentData.durationMinutes || 45;
+        const start24 = timeTo24h(appointmentData.time || '10:00 AM');
+        const startMins = timeToMinutes(appointmentData.time || '10:00 AM');
+        const end24 = minutesToTimeStr(startMins + duration);
+        const endTime24 = timeTo24h(end24);
+
+        const payload = {
+          patientId: parseInt(appointmentData.patientId || '1', 10) || 1,
+          physiotherapistId: parseInt(appointmentData.therapistId || '3', 10) || 3,
+          appointmentTypeId: 2,
+          appointmentDate: appointmentData.date ? `${appointmentData.date}T00:00:00Z` : new Date().toISOString(),
+          startTime: start24,
+          endTime: endTime24,
+          reason: appointmentData.type || 'Physiotherapy Consultation',
+          notes: appointmentData.notes || '',
+        };
+
+        const response = await api.post('/appointments', payload);
+        return mapBackendAppointment(response.data);
       }
       throw new Error('Offline mode');
     } catch {

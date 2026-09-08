@@ -50,6 +50,11 @@ api.interceptors.response.use(
     if (errorData) {
       if (Array.isArray(errorData.errors) && errorData.errors.length > 0) {
         errorMessage = errorData.errors.join('; ');
+      } else if (errorData.errors && typeof errorData.errors === 'object') {
+        const values = Object.values(errorData.errors).flat();
+        if (values.length > 0) {
+          errorMessage = values.join('; ');
+        }
       } else if (errorData.message) {
         errorMessage = errorData.message;
       } else if (errorData.error) {
