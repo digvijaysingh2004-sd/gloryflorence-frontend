@@ -19,13 +19,13 @@ import { Button } from '../components/common/Button';
 import { Input } from '../components/common/Input';
 import { Modal } from '../components/common/Modal';
 import { useNotification } from '../context/NotificationContext';
+import { masterDataService } from '../services/masterDataService';
 import {
   treatmentService,
-  TREATMENT_CATEGORIES,
   EXERCISE_CATEGORIES,
   MUSCLE_GROUPS,
 } from '../services/treatmentService';
-import type { TreatmentType, Exercise } from '../types';
+import type { TreatmentType, Exercise, CategoryDto } from '../types';
 import './TreatmentsPage.css';
 
 export const TreatmentsPage: React.FC = () => {
@@ -37,6 +37,7 @@ export const TreatmentsPage: React.FC = () => {
   // Data States
   const [treatments, setTreatments] = useState<TreatmentType[]>([]);
   const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [categories, setCategories] = useState<CategoryDto[]>([]);
 
   // Modality Filters
   const [treatmentCategory, setTreatmentCategory] = useState<string>('All');
@@ -60,7 +61,7 @@ export const TreatmentsPage: React.FC = () => {
   // Forms State - Treatment
   const initialTreatmentForm = {
     name: '',
-    category: 'Manual Therapy' as TreatmentType['category'],
+    category: '',
     description: '',
     durationMinutes: 45,
     defaultPrice: 65,
@@ -85,6 +86,15 @@ export const TreatmentsPage: React.FC = () => {
   const [exerciseFormData, setExerciseFormData] = useState(initialExerciseForm);
 
   // Load Data
+  const loadCategories = useCallback(async () => {
+    try {
+      const data = await masterDataService.getCategories();
+      setCategories(data);
+    } catch {
+      console.error('Failed to load categories.');
+    }
+  }, []);
+
   const loadTreatments = useCallback(async () => {
     try {
       const data = await treatmentService.getAllTreatments({
@@ -112,17 +122,27 @@ export const TreatmentsPage: React.FC = () => {
   }, [exerciseCategory, exerciseDifficulty, exerciseMuscleGroup, exerciseSearch, showToast]);
 
   const refreshAllData = useCallback(async () => {
-    await Promise.all([loadTreatments(), loadExercises()]);
-  }, [loadTreatments, loadExercises]);
+    await Promise.all([loadCategories(), loadTreatments(), loadExercises()]);
+  }, [loadCategories, loadTreatments, loadExercises]);
 
   useEffect(() => {
     refreshAllData();
   }, [refreshAllData]);
 
+  const treatmentCategoryNames = useMemo(() => {
+    if (categories.length > 0) {
+      return categories.map((c) => c.name);
+    }
+    return Array.from(new Set(treatments.map((t) => t.category).filter(Boolean)));
+  }, [categories, treatments]);
+
   // Modality Handlers
   const handleOpenAddTreatment = () => {
     setEditingTreatment(null);
-    setTreatmentFormData(initialTreatmentForm);
+    setTreatmentFormData({
+      ...initialTreatmentForm,
+      category: categories.length > 0 ? categories[0].name : '',
+    });
     setIsTreatmentModalOpen(true);
   };
 
@@ -354,7 +374,7 @@ export const TreatmentsPage: React.FC = () => {
           <Card className="treatments-filter-card">
             <div className="filter-bar-row">
               <div className="category-chips">
-                {['All', ...TREATMENT_CATEGORIES].map((cat) => (
+                {['All', ...treatmentCategoryNames].map((cat) => (
                   <button
                     key={cat}
                     className={`category-chip ${treatmentCategory === cat ? 'active' : ''}`}
@@ -622,15 +642,21 @@ export const TreatmentsPage: React.FC = () => {
                 onChange={(e) =>
                   setTreatmentFormData({
                     ...treatmentFormData,
-                    category: e.target.value as TreatmentType['category'],
+                    category: e.target.value,
                   })
                 }
               >
-                {TREATMENT_CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
+                {categories.length > 0 ? (
+                  categories.map((cat) => (
+                    <option key={cat.id} value={cat.name}>
+                      {cat.name}
+                    </option>
+                  ))
+                ) : (
+                  <option value={treatmentFormData.category}>
+                    {treatmentFormData.category || 'Select Category'}
                   </option>
-                ))}
+                )}
               </select>
             </div>
 

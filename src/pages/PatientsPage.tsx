@@ -8,7 +8,8 @@ import { Input } from '../components/common/Input';
 import { Modal } from '../components/common/Modal';
 import { useNotification } from '../context/NotificationContext';
 import { patientService } from '../services/patientService';
-import type { Patient } from '../types';
+import { masterDataService } from '../services/masterDataService';
+import type { Patient, GenderDto, BloodGroupDto, CountryDto, StateDto, CityDto } from '../types';
 import './PatientsPage.css';
 
 export const PatientsPage: React.FC = () => {
@@ -19,6 +20,13 @@ export const PatientsPage: React.FC = () => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [genderFilter, setGenderFilter] = useState('All');
+
+  // Master Data State
+  const [genders, setGenders] = useState<GenderDto[]>([]);
+  const [bloodGroups, setBloodGroups] = useState<BloodGroupDto[]>([]);
+  const [countries, setCountries] = useState<CountryDto[]>([]);
+  const [states, setStates] = useState<StateDto[]>([]);
+  const [cities, setCities] = useState<CityDto[]>([]);
 
   // Core Data State
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -34,7 +42,7 @@ export const PatientsPage: React.FC = () => {
     name: '',
     email: '',
     phone: '',
-    gender: 'Male' as 'Male' | 'Female' | 'Other',
+    gender: 'Male',
     dateOfBirth: '',
     bloodGroup: 'O+',
     address: '',
@@ -47,6 +55,25 @@ export const PatientsPage: React.FC = () => {
   };
   const [formData, setFormData] = useState(initialFormState);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  const loadMasterData = useCallback(async () => {
+    try {
+      const [gList, bgList, cList, sList, ciList] = await Promise.all([
+        masterDataService.getGenders(),
+        masterDataService.getBloodGroups(),
+        masterDataService.getCountries(),
+        masterDataService.getStates(),
+        masterDataService.getCities(),
+      ]);
+      setGenders(gList);
+      setBloodGroups(bgList);
+      setCountries(cList);
+      setStates(sList);
+      setCities(ciList);
+    } catch (err) {
+      console.error('Failed to load master data', err);
+    }
+  }, []);
 
   const loadPatients = useCallback(async () => {
     setIsLoading(true);
@@ -65,8 +92,9 @@ export const PatientsPage: React.FC = () => {
   }, [search, statusFilter, genderFilter, showToast]);
 
   useEffect(() => {
+    loadMasterData();
     loadPatients();
-  }, [loadPatients]);
+  }, [loadMasterData, loadPatients]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
@@ -101,7 +129,14 @@ export const PatientsPage: React.FC = () => {
   };
 
   const openAddModal = () => {
-    setFormData(initialFormState);
+    setFormData({
+      ...initialFormState,
+      gender: genders.length > 0 ? genders[0].name : 'Male',
+      bloodGroup: bloodGroups.length > 0 ? bloodGroups[0].name : 'O+',
+      country: countries.length > 0 ? countries[0].name : '',
+      state: states.length > 0 ? states[0].name : '',
+      city: cities.length > 0 ? cities[0].name : '',
+    });
     setFormErrors({});
     setIsAddModalOpen(true);
   };
@@ -198,36 +233,44 @@ export const PatientsPage: React.FC = () => {
       ),
     },
     {
-      key: 'gender',
-      title: 'Gender / Age',
+      key: 'phone',
+      title: 'Contact',
       render: (patient) => (
         <div>
-          <span>{patient.gender}</span>
-          <span className="patient-age-badge">{calculateAge(patient.dateOfBirth)} yrs</span>
+          <div>{patient.phone}</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{patient.email}</div>
         </div>
       ),
     },
     {
-      key: 'phone',
-      title: 'Contact Details',
+      key: 'gender',
+      title: 'Gender / Age',
       render: (patient) => (
-        <div>
-          <div className="patient-row-phone">{patient.phone}</div>
-          <div className="patient-row-subtext">{patient.email || 'No email'}</div>
-        </div>
+        <span>
+          {patient.gender} ({calculateAge(patient.dateOfBirth)} yrs)
+        </span>
       ),
     },
     {
       key: 'bloodGroup',
       title: 'Blood Group',
-      width: '100px',
+      render: (patient) => <span className="patient-badge-bg">{patient.bloodGroup}</span>,
+    },
+    {
+      key: 'city',
+      title: 'Location',
+      render: (patient) => (
+        <span>
+          {patient.city}
+          {patient.state ? `, ${patient.state}` : ''}
+        </span>
+      ),
     },
     {
       key: 'status',
       title: 'Status',
-      width: '120px',
       render: (patient) => (
-        <span className={`status-badge status-badge-${patient.status.toLowerCase()}`}>
+        <span className={`status-badge status-${patient.status.toLowerCase()}`}>
           {patient.status}
         </span>
       ),
@@ -235,27 +278,22 @@ export const PatientsPage: React.FC = () => {
     {
       key: 'actions',
       title: 'Actions',
-      width: '150px',
       render: (patient) => (
         <div className="patient-actions-cell" onClick={(e) => e.stopPropagation()}>
           <button
-            onClick={() => navigate(`/patients/${patient.id}`)}
-            className="patient-btn-action btn-view"
+            className="action-icon-btn"
             title="View Details"
+            onClick={() => navigate(`/patients/${patient.id}`)}
           >
             <Eye size={16} />
           </button>
-          <button
-            onClick={() => openEditModal(patient)}
-            className="patient-btn-action btn-edit"
-            title="Edit Info"
-          >
+          <button className="action-icon-btn" title="Edit Patient" onClick={() => openEditModal(patient)}>
             <Edit size={16} />
           </button>
           <button
-            onClick={() => handleDeletePatient(patient.id, patient.name)}
-            className="patient-btn-action btn-delete"
+            className="action-icon-btn danger"
             title="Delete Patient"
+            onClick={() => handleDeletePatient(patient.id, patient.name)}
           >
             <Trash2 size={16} />
           </button>
@@ -265,7 +303,7 @@ export const PatientsPage: React.FC = () => {
   ];
 
   return (
-    <div className="patients-page-container">
+    <div className="patients-container animate-fade-in">
       {/* Top Banner Dashboard Actions */}
       <div className="patients-header-actions animate-slide-in">
         <div>
@@ -307,9 +345,11 @@ export const PatientsPage: React.FC = () => {
               </label>
               <select value={genderFilter} onChange={handleGenderChange} className="filter-select">
                 <option value="All">All Genders</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
+                {genders.map((g) => (
+                  <option key={g.id} value={g.name}>
+                    {g.name}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -375,9 +415,19 @@ export const PatientsPage: React.FC = () => {
                 onChange={handleInputChange}
                 className="input-field"
               >
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
+                {genders.length > 0 ? (
+                  genders.map((g) => (
+                    <option key={g.id} value={g.name}>
+                      {g.name}
+                    </option>
+                  ))
+                ) : (
+                  <>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </>
+                )}
               </select>
             </div>
           </div>
@@ -399,14 +449,24 @@ export const PatientsPage: React.FC = () => {
                 onChange={handleInputChange}
                 className="input-field"
               >
-                <option value="O+">O+</option>
-                <option value="O-">O-</option>
-                <option value="A+">A+</option>
-                <option value="A-">A-</option>
-                <option value="B+">B+</option>
-                <option value="B-">B-</option>
-                <option value="AB+">AB+</option>
-                <option value="AB-">AB-</option>
+                {bloodGroups.length > 0 ? (
+                  bloodGroups.map((bg) => (
+                    <option key={bg.id} value={bg.name}>
+                      {bg.name}
+                    </option>
+                  ))
+                ) : (
+                  <>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                  </>
+                )}
               </select>
             </div>
           </div>
@@ -422,29 +482,83 @@ export const PatientsPage: React.FC = () => {
               onChange={handleInputChange}
               placeholder="Enter street address"
             />
-            <Input
-              label="City"
-              name="city"
-              value={formData.city}
-              onChange={handleInputChange}
-              placeholder="City"
-            />
+            <div className="input-group">
+              <label className="input-label">City</label>
+              {cities.length > 0 ? (
+                <select
+                  name="city"
+                  value={formData.city}
+                  onChange={handleInputChange}
+                  className="input-field"
+                >
+                  <option value="">Select City</option>
+                  {cities.map((c) => (
+                    <option key={c.id} value={c.name}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <Input
+                  name="city"
+                  value={formData.city}
+                  onChange={handleInputChange}
+                  placeholder="City"
+                />
+              )}
+            </div>
           </div>
           <div className="form-grid-2">
-            <Input
-              label="State"
-              name="state"
-              value={formData.state}
-              onChange={handleInputChange}
-              placeholder="State"
-            />
-            <Input
-              label="Country"
-              name="country"
-              value={formData.country}
-              onChange={handleInputChange}
-              placeholder="Country"
-            />
+            <div className="input-group">
+              <label className="input-label">State</label>
+              {states.length > 0 ? (
+                <select
+                  name="state"
+                  value={formData.state}
+                  onChange={handleInputChange}
+                  className="input-field"
+                >
+                  <option value="">Select State</option>
+                  {states.map((s) => (
+                    <option key={s.id} value={s.name}>
+                      {s.name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <Input
+                  name="state"
+                  value={formData.state}
+                  onChange={handleInputChange}
+                  placeholder="State"
+                />
+              )}
+            </div>
+            <div className="input-group">
+              <label className="input-label">Country</label>
+              {countries.length > 0 ? (
+                <select
+                  name="country"
+                  value={formData.country}
+                  onChange={handleInputChange}
+                  className="input-field"
+                >
+                  <option value="">Select Country</option>
+                  {countries.map((c) => (
+                    <option key={c.id} value={c.name}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <Input
+                  name="country"
+                  value={formData.country}
+                  onChange={handleInputChange}
+                  placeholder="Country"
+                />
+              )}
+            </div>
           </div>
 
           <h4 className="form-section-title" style={{ marginTop: '1.25rem' }}>
@@ -521,9 +635,19 @@ export const PatientsPage: React.FC = () => {
                 onChange={handleInputChange}
                 className="input-field"
               >
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
+                {genders.length > 0 ? (
+                  genders.map((g) => (
+                    <option key={g.id} value={g.name}>
+                      {g.name}
+                    </option>
+                  ))
+                ) : (
+                  <>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </>
+                )}
               </select>
             </div>
           </div>
@@ -560,14 +684,24 @@ export const PatientsPage: React.FC = () => {
                 onChange={handleInputChange}
                 className="input-field"
               >
-                <option value="O+">O+</option>
-                <option value="O-">O-</option>
-                <option value="A+">A+</option>
-                <option value="A-">A-</option>
-                <option value="B+">B+</option>
-                <option value="B-">B-</option>
-                <option value="AB+">AB+</option>
-                <option value="AB-">AB-</option>
+                {bloodGroups.length > 0 ? (
+                  bloodGroups.map((bg) => (
+                    <option key={bg.id} value={bg.name}>
+                      {bg.name}
+                    </option>
+                  ))
+                ) : (
+                  <>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                  </>
+                )}
               </select>
             </div>
           </div>
@@ -582,26 +716,83 @@ export const PatientsPage: React.FC = () => {
               value={formData.address}
               onChange={handleInputChange}
             />
-            <Input
-              label="City"
-              name="city"
-              value={formData.city}
-              onChange={handleInputChange}
-            />
+            <div className="input-group">
+              <label className="input-label">City</label>
+              {cities.length > 0 ? (
+                <select
+                  name="city"
+                  value={formData.city}
+                  onChange={handleInputChange}
+                  className="input-field"
+                >
+                  <option value="">Select City</option>
+                  {cities.map((c) => (
+                    <option key={c.id} value={c.name}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <Input
+                  name="city"
+                  value={formData.city}
+                  onChange={handleInputChange}
+                  placeholder="City"
+                />
+              )}
+            </div>
           </div>
           <div className="form-grid-2">
-            <Input
-              label="State"
-              name="state"
-              value={formData.state}
-              onChange={handleInputChange}
-            />
-            <Input
-              label="Country"
-              name="country"
-              value={formData.country}
-              onChange={handleInputChange}
-            />
+            <div className="input-group">
+              <label className="input-label">State</label>
+              {states.length > 0 ? (
+                <select
+                  name="state"
+                  value={formData.state}
+                  onChange={handleInputChange}
+                  className="input-field"
+                >
+                  <option value="">Select State</option>
+                  {states.map((s) => (
+                    <option key={s.id} value={s.name}>
+                      {s.name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <Input
+                  name="state"
+                  value={formData.state}
+                  onChange={handleInputChange}
+                  placeholder="State"
+                />
+              )}
+            </div>
+            <div className="input-group">
+              <label className="input-label">Country</label>
+              {countries.length > 0 ? (
+                <select
+                  name="country"
+                  value={formData.country}
+                  onChange={handleInputChange}
+                  className="input-field"
+                >
+                  <option value="">Select Country</option>
+                  {countries.map((c) => (
+                    <option key={c.id} value={c.name}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <Input
+                  name="country"
+                  value={formData.country}
+                  onChange={handleInputChange}
+                  placeholder="Country"
+                />
+              )}
+            </div>
           </div>
 
           <h4 className="form-section-title" style={{ marginTop: '1.5rem' }}>

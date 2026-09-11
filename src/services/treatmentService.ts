@@ -1,4 +1,5 @@
 import api from "./api";
+import masterDataService from "./masterDataService";
 import type { TreatmentType, Exercise } from "../types";
 
 const STORAGE_KEY_TREATMENTS = "gf_treatments_db";
@@ -313,13 +314,17 @@ const saveExercisesStore = (data: Exercise[]) => {
 
 export const mapBackendTreatmentType = (dto: any): TreatmentType => {
   if (!dto) return {} as TreatmentType;
+  const categoryName = typeof dto.category === "string" 
+    ? dto.category 
+    : (dto.category?.name || dto.categoryName || "");
+
   return {
     id: String(dto.id),
     name: dto.name || "",
-    category: dto.category || (dto.categoryName as any) || "Manual Therapy",
+    category: categoryName,
     description: dto.description || "",
     durationMinutes: dto.durationMinutes || dto.defaultDurationMinutes || 45,
-    defaultPrice: dto.defaultPrice !== undefined ? dto.defaultPrice : 50,
+    defaultPrice: dto.defaultPrice !== undefined ? dto.defaultPrice : 0,
     status: dto.status || (dto.isActive === false ? "Inactive" : "Active"),
     requiredEquipment: dto.requiredEquipment || [],
   };
@@ -327,11 +332,15 @@ export const mapBackendTreatmentType = (dto: any): TreatmentType => {
 
 export const mapBackendExercise = (dto: any): Exercise => {
   if (!dto) return {} as Exercise;
+  const categoryName = typeof dto.category === "string"
+    ? dto.category
+    : (dto.category?.name || dto.categoryName || "");
+
   return {
     id: String(dto.id),
     title: dto.title || dto.name || "Exercise",
-    category: dto.category || (dto.categoryName as any) || "Strengthening",
-    targetMuscleGroup: dto.targetMuscleGroup || "General Core & Spine",
+    category: categoryName,
+    targetMuscleGroup: dto.targetMuscleGroup || "General",
     difficulty: dto.difficulty || "Beginner",
     equipment: dto.equipment || "None / Mat",
     defaultSets: dto.defaultSets || 3,
@@ -348,20 +357,48 @@ export const mapBackendExercise = (dto: any): Exercise => {
   };
 };
 
-export const CATEGORY_NAME_TO_ID: Record<string, number> = {
-  "Manual Therapy": 1,
-  Electrotherapy: 2,
-  "Exercise Therapy": 3,
-  "Knee Rehabilitation": 3,
-  Strengthening: 3,
-  Hydrotherapy: 4,
-  "Mobility & Stretching": 4,
-  "Specialized Rehabilitation": 5,
-  "Core Stability": 5,
-  "Balance & Coordination": 5,
-  "Postural Correction": 5,
-  Cardiovascular: 6,
-  Other: 6,
+let cachedCategoryMap: Record<string, number> | null = null;
+
+export const getCategoryMap = async (): Promise<Record<string, number>> => {
+  try {
+    const categories = await masterDataService.getCategories();
+    if (categories && categories.length > 0) {
+      const map: Record<string, number> = {};
+      categories.forEach((cat) => {
+        if (cat.name) {
+          map[cat.name] = cat.id;
+          map[cat.name.toLowerCase()] = cat.id;
+        }
+      });
+      cachedCategoryMap = map;
+      return map;
+    }
+  } catch (error) {
+    console.warn(
+      "[Category Lookup] Failed to fetch masterdata categories",
+      error,
+    );
+  }
+  return cachedCategoryMap || {};
+};
+
+export const getCategoryId = async (
+  categoryName?: string,
+  defaultId: number = 1,
+): Promise<number> => {
+  if (!categoryName) return defaultId;
+
+  if (cachedCategoryMap) {
+    if (cachedCategoryMap[categoryName]) return cachedCategoryMap[categoryName];
+    if (cachedCategoryMap[categoryName.toLowerCase()])
+      return cachedCategoryMap[categoryName.toLowerCase()];
+  }
+
+  const map = await getCategoryMap();
+  if (map[categoryName]) return map[categoryName];
+  if (map[categoryName.toLowerCase()]) return map[categoryName.toLowerCase()];
+
+  return defaultId;
 };
 
 export const treatmentService = {
@@ -433,7 +470,7 @@ export const treatmentService = {
     data: Omit<TreatmentType, "id">,
   ): Promise<TreatmentType> => {
     const categoryId =
-      (data as any).categoryId || CATEGORY_NAME_TO_ID[data.category] || 1;
+      (data as any).categoryId || (await getCategoryId(data.category, 1));
     const payload = {
       categoryId,
       name: data.name,
@@ -464,7 +501,7 @@ export const treatmentService = {
   ): Promise<TreatmentType> => {
     const categoryId =
       (data as any).categoryId ||
-      (data.category ? CATEGORY_NAME_TO_ID[data.category] : 1);
+      (data.category ? await getCategoryId(data.category, 1) : 1);
     const payload = {
       id: parseInt(id, 10) || 1,
       categoryId,
@@ -586,7 +623,7 @@ export const treatmentService = {
 
   createExercise: async (data: Omit<Exercise, "id">): Promise<Exercise> => {
     const categoryId =
-      (data as any).categoryId || CATEGORY_NAME_TO_ID[data.category] || 3;
+      (data as any).categoryId || (await getCategoryId(data.category, 3));
     const payload = {
       categoryId,
       name: data.title,
@@ -620,7 +657,7 @@ export const treatmentService = {
   ): Promise<Exercise> => {
     const categoryId =
       (data as any).categoryId ||
-      (data.category ? CATEGORY_NAME_TO_ID[data.category] : 3);
+      (data.category ? await getCategoryId(data.category, 3) : 3);
     const payload = {
       id: parseInt(id, 10) || 1,
       categoryId,

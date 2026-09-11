@@ -1,4 +1,4 @@
-import api from './api';
+import api from "./api";
 import type {
   CountryDto,
   StateDto,
@@ -9,66 +9,34 @@ import type {
   CategoryDto,
   StatusDto,
   UserDto,
-} from '../types/api.types';
+} from "../types/api.types";
 
-// Offline fallback mock data for Master Data
-const MOCK_COUNTRIES: CountryDto[] = [
-  { id: 1, name: 'India', code: 'IN', isActive: true, createdAt: '2026-09-08T00:00:00Z' },
-  { id: 2, name: 'United States', code: 'US', isActive: true, createdAt: '2026-09-08T00:00:00Z' },
-  { id: 3, name: 'Australia', code: 'AU', isActive: true, createdAt: '2026-09-08T00:00:00Z' },
-  { id: 4, name: 'United Kingdom', code: 'GB', isActive: true, createdAt: '2026-09-08T00:00:00Z' },
-];
-
-const MOCK_GENDERS: GenderDto[] = [
-  { id: 1, name: 'Male', isActive: true, createdAt: '2026-09-08T00:00:00Z' },
-  { id: 2, name: 'Female', isActive: true, createdAt: '2026-09-08T00:00:00Z' },
-  { id: 3, name: 'Other', isActive: true, createdAt: '2026-09-08T00:00:00Z' },
-];
-
-const MOCK_BLOOD_GROUPS: BloodGroupDto[] = [
-  { id: 1, name: 'A+', isActive: true, createdAt: '2026-09-08T00:00:00Z' },
-  { id: 2, name: 'A-', isActive: true, createdAt: '2026-09-08T00:00:00Z' },
-  { id: 3, name: 'B+', isActive: true, createdAt: '2026-09-08T00:00:00Z' },
-  { id: 4, name: 'B-', isActive: true, createdAt: '2026-09-08T00:00:00Z' },
-  { id: 5, name: 'O+', isActive: true, createdAt: '2026-09-08T00:00:00Z' },
-  { id: 6, name: 'O-', isActive: true, createdAt: '2026-09-08T00:00:00Z' },
-  { id: 7, name: 'AB+', isActive: true, createdAt: '2026-09-08T00:00:00Z' },
-  { id: 8, name: 'AB-', isActive: true, createdAt: '2026-09-08T00:00:00Z' },
-];
-
-const MOCK_SPECIALIZATIONS: SpecializationDto[] = [
-  { id: 1, name: 'Orthopedic Physiotherapy', description: 'Musculoskeletal system', isActive: true, createdAt: '2026-09-08T00:00:00Z' },
-  { id: 2, name: 'Neurological Rehabilitation', description: 'Brain and nervous system', isActive: true, createdAt: '2026-09-08T00:00:00Z' },
-  { id: 3, name: 'Sports Physiotherapy', description: 'Athletic injuries and conditioning', isActive: true, createdAt: '2026-09-08T00:00:00Z' },
-  { id: 4, name: 'Pediatric Physiotherapy', description: 'Children developmental conditions', isActive: true, createdAt: '2026-09-08T00:00:00Z' },
-  { id: 5, name: 'Cardiopulmonary Rehabilitation', description: 'Heart and lung disorders', isActive: true, createdAt: '2026-09-08T00:00:00Z' },
-];
-
-const MOCK_PHYSIOTHERAPISTS: UserDto[] = [
-  { id: 3, username: 'therapist', email: 'therapist@gloryflorence.com', role: 'Physiotherapist', isActive: true, firstName: 'John', lastName: 'Therapist', createdAt: '2026-09-08T10:00:00Z' },
-  { id: 4, username: 'doctor', email: 'doctor@gloryflorence.com', role: 'Doctor', isActive: true, firstName: 'Sarah', lastName: 'Doctor', createdAt: '2026-09-08T10:00:00Z' },
-  { id: 1, username: 'admin', email: 'admin@gloryflorence.com', role: 'Super Admin', isActive: true, firstName: 'System', lastName: 'Administrator', createdAt: '2026-09-08T10:00:00Z' },
-];
+const extractArray = <T>(resData: any): T[] => {
+  if (Array.isArray(resData)) return resData;
+  if (Array.isArray(resData?.data)) return resData.data;
+  if (Array.isArray(resData?.items)) return resData.items;
+  return [];
+};
 
 export const masterDataService = {
   // 11.1 Get Countries: GET /api/masterdata/countries
   getCountries: async (): Promise<CountryDto[]> => {
     try {
-      const response = await api.get('/masterdata/countries');
-      return Array.isArray(response.data) ? response.data : response.data?.items || MOCK_COUNTRIES;
-    } catch {
-      console.warn('[Offline Mode] Returning mock countries');
-      return MOCK_COUNTRIES;
+      const response = await api.get("/masterdata/countries");
+      return extractArray<CountryDto>(response.data);
+    } catch (err) {
+      console.error("Failed to fetch countries", err);
+      return [];
     }
   },
 
   // 11.2 Get States: GET /api/masterdata/states
   getStates: async (): Promise<StateDto[]> => {
     try {
-      const response = await api.get('/masterdata/states');
-      return Array.isArray(response.data) ? response.data : response.data?.items || [];
-    } catch {
-      console.warn('[Offline Mode] Returning empty states array');
+      const response = await api.get("/masterdata/states");
+      return extractArray<StateDto>(response.data);
+    } catch (err) {
+      console.error("Failed to fetch states", err);
       return [];
     }
   },
@@ -76,10 +44,10 @@ export const masterDataService = {
   // 11.3 Get Cities: GET /api/masterdata/cities
   getCities: async (): Promise<CityDto[]> => {
     try {
-      const response = await api.get('/masterdata/cities');
-      return Array.isArray(response.data) ? response.data : response.data?.items || [];
-    } catch {
-      console.warn('[Offline Mode] Returning empty cities array');
+      const response = await api.get("/masterdata/cities");
+      return extractArray<CityDto>(response.data);
+    } catch (err) {
+      console.error("Failed to fetch cities", err);
       return [];
     }
   },
@@ -87,43 +55,43 @@ export const masterDataService = {
   // 11.4 Get Genders: GET /api/masterdata/genders
   getGenders: async (): Promise<GenderDto[]> => {
     try {
-      const response = await api.get('/masterdata/genders');
-      return Array.isArray(response.data) ? response.data : response.data?.items || MOCK_GENDERS;
-    } catch {
-      console.warn('[Offline Mode] Returning mock genders');
-      return MOCK_GENDERS;
+      const response = await api.get("/masterdata/genders");
+      return extractArray<GenderDto>(response.data);
+    } catch (err) {
+      console.error("Failed to fetch genders", err);
+      return [];
     }
   },
 
   // 11.5 Get Blood Groups: GET /api/masterdata/bloodgroups
   getBloodGroups: async (): Promise<BloodGroupDto[]> => {
     try {
-      const response = await api.get('/masterdata/bloodgroups');
-      return Array.isArray(response.data) ? response.data : response.data?.items || MOCK_BLOOD_GROUPS;
-    } catch {
-      console.warn('[Offline Mode] Returning mock blood groups');
-      return MOCK_BLOOD_GROUPS;
+      const response = await api.get("/masterdata/bloodgroups");
+      return extractArray<BloodGroupDto>(response.data);
+    } catch (err) {
+      console.error("Failed to fetch blood groups", err);
+      return [];
     }
   },
 
   // 11.6 Get Clinical Specializations: GET /api/masterdata/specializations
   getSpecializations: async (): Promise<SpecializationDto[]> => {
     try {
-      const response = await api.get('/masterdata/specializations');
-      return Array.isArray(response.data) ? response.data : response.data?.items || MOCK_SPECIALIZATIONS;
-    } catch {
-      console.warn('[Offline Mode] Returning mock specializations');
-      return MOCK_SPECIALIZATIONS;
+      const response = await api.get("/masterdata/specializations");
+      return extractArray<SpecializationDto>(response.data);
+    } catch (err) {
+      console.error("Failed to fetch specializations", err);
+      return [];
     }
   },
 
   // 11.7 Get Categories: GET /api/masterdata/categories
   getCategories: async (): Promise<CategoryDto[]> => {
     try {
-      const response = await api.get('/masterdata/categories');
-      return Array.isArray(response.data) ? response.data : response.data?.items || [];
-    } catch {
-      console.warn('[Offline Mode] Returning empty categories');
+      const response = await api.get("/masterdata/categories");
+      return extractArray<CategoryDto>(response.data);
+    } catch (err) {
+      console.error("Failed to fetch categories", err);
       return [];
     }
   },
@@ -131,10 +99,12 @@ export const masterDataService = {
   // 11.8 Get System Statuses: GET /api/masterdata/statuses
   getStatuses: async (type?: string): Promise<StatusDto[]> => {
     try {
-      const response = await api.get('/masterdata/statuses', { params: { type } });
-      return Array.isArray(response.data) ? response.data : response.data?.items || [];
-    } catch {
-      console.warn('[Offline Mode] Returning empty statuses');
+      const response = await api.get("/masterdata/statuses", {
+        params: { type },
+      });
+      return extractArray<StatusDto>(response.data);
+    } catch (err) {
+      console.error("Failed to fetch statuses", err);
       return [];
     }
   },
@@ -142,11 +112,11 @@ export const masterDataService = {
   // 11.9 Get Physiotherapists & Clinical Staff: GET /api/masterdata/physiotherapists
   getPhysiotherapists: async (): Promise<UserDto[]> => {
     try {
-      const response = await api.get('/masterdata/physiotherapists');
-      return Array.isArray(response.data) ? response.data : response.data?.items || MOCK_PHYSIOTHERAPISTS;
-    } catch {
-      console.warn('[Offline Mode] Returning mock physiotherapists');
-      return MOCK_PHYSIOTHERAPISTS;
+      const response = await api.get("/masterdata/physiotherapists");
+      return extractArray<UserDto>(response.data);
+    } catch (err) {
+      console.error("Failed to fetch physiotherapists", err);
+      return [];
     }
   },
 };
