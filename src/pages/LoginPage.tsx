@@ -1,6 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  UserCheck,
+  ChevronLeft,
+  ChevronRight,
+  Shield,
+  Building2,
+  Activity,
+  Stethoscope,
+  Headphones,
+  DollarSign,
+  User,
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Input } from '../components/common/Input';
 import { Button } from '../components/common/Button';
@@ -18,8 +33,26 @@ export const LoginPage: React.FC = () => {
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const quickRolesRef = useRef<HTMLDivElement>(null);
+
   // Retrieve redirect route from state, default to root dashboard
   const redirectPath = (location.state as { from?: { pathname: string } })?.from?.pathname || '/';
+
+  const rolesList = [
+    { label: 'Admin', email: 'admin@gloryflorence.com', pass: 'Admin123!', icon: <Shield size={14} /> },
+    { label: 'Clinic Admin', email: 'clinicadmin@gloryflorence.com', pass: 'Admin123!', icon: <Building2 size={14} /> },
+    { label: 'Therapist', email: 'therapist@gloryflorence.com', pass: 'Therapist123!', icon: <Activity size={14} /> },
+    { label: 'Doctor', email: 'doctor@gloryflorence.com', pass: 'Doctor123!', icon: <Stethoscope size={14} /> },
+    { label: 'Receptionist', email: 'receptionist@gloryflorence.com', pass: 'Receptionist123!', icon: <Headphones size={14} /> },
+    { label: 'Accountant', email: 'accountant@gloryflorence.com', pass: 'Accountant123!', icon: <DollarSign size={14} /> },
+    { label: 'Patient', email: 'patientuser@gloryflorence.com', pass: 'Patient123!', icon: <User size={14} /> },
+  ];
+
+  const quickFill = (userEmail: string, userPassword: string) => {
+    setEmail(userEmail);
+    setPassword(userPassword);
+    setErrors({});
+  };
 
   const validate = () => {
     const newErrors: { email?: string; password?: string } = {};
@@ -58,17 +91,62 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="login-page-wrapper">
+    <div className="login-page-wrapper animate-fade-in">
       <div className="login-form-header">
         <h2 className="login-form-title">Account Sign In</h2>
         <p className="login-form-subtitle">Enter your clinical credentials to access your console</p>
+      </div>
+
+      {/* Quick Demo Sign In Bar - Patient Details Tab Style */}
+      <div className="login-quick-section">
+        <div className="quick-roles-header">
+          <UserCheck size={14} />
+          <span>Quick Demo Sign In:</span>
+        </div>
+
+        <div className="quick-tabs-wrapper">
+          <button
+            type="button"
+            className="quick-tabs-scroll-btn left"
+            onClick={() => quickRolesRef.current?.scrollBy({ left: -160, behavior: 'smooth' })}
+            title="Scroll left"
+          >
+            <ChevronLeft size={16} />
+          </button>
+
+          <div className="quick-tabs-bar" ref={quickRolesRef}>
+            {rolesList.map((role) => {
+              const isActive = email === role.email;
+              return (
+                <button
+                  key={role.email}
+                  type="button"
+                  onClick={() => quickFill(role.email, role.pass)}
+                  className={`quick-tab-btn ${isActive ? 'quick-tab-btn-active' : ''}`}
+                >
+                  {role.icon}
+                  <span>{role.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <button
+            type="button"
+            className="quick-tabs-scroll-btn right"
+            onClick={() => quickRolesRef.current?.scrollBy({ left: 160, behavior: 'smooth' })}
+            title="Scroll right"
+          >
+            <ChevronRight size={16} />
+          </button>
+        </div>
       </div>
 
       <form className="login-form" onSubmit={handleSubmit}>
         <Input
           label="Username or Email"
           type="text"
-          placeholder="e.g. therapist or admin@gloryflorence.com"
+          placeholder="e.g. admin@gloryflorence.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           error={errors.email}
@@ -120,7 +198,6 @@ export const LoginPage: React.FC = () => {
         >
           Sign In
         </Button>
-
       </form>
     </div>
   );

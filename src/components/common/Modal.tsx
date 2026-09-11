@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import ReactDOM from 'react-dom';
 import { X } from 'lucide-react';
 import './Modal.css';
 
@@ -47,7 +48,7 @@ export const Modal: React.FC<ModalProps> = ({
     }
   };
 
-  return (
+  const modalContent = (
     <div
       className="modal-overlay"
       ref={overlayRef}
@@ -59,6 +60,7 @@ export const Modal: React.FC<ModalProps> = ({
         <div className="modal-header">
           <h3 className="modal-title">{title}</h3>
           <button
+            type="button"
             onClick={onClose}
             className="modal-close-btn"
             aria-label="Close modal"
@@ -71,4 +73,7 @@ export const Modal: React.FC<ModalProps> = ({
       </div>
     </div>
   );
+
+  return ReactDOM.createPortal(modalContent, document.body);
 };
+

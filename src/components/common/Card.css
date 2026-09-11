@@ -1,8 +1,8 @@
 .card {
-  background-color: white;
+  background-color: var(--bg-surface);
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--card-shadow);
   overflow: hidden;
   transition: transform var(--transition-normal), box-shadow var(--transition-normal);
 }
@@ -29,13 +29,13 @@
 .card-title {
   font-size: 1.05rem;
   font-weight: 700;
-  color: var(--slate-800);
+  color: var(--text-primary);
 }
 
 .card-subtitle {
   font-size: 0.75rem;
   font-weight: 500;
-  color: var(--slate-500);
+  color: var(--text-muted);
 }
 
 .card-body {
@@ -45,7 +45,7 @@
 .card-footer {
   padding: 16px 24px;
   border-top: 1px solid var(--border-color);
-  background-color: var(--slate-50);
+  background-color: var(--bg-subtle);
   display: flex;
   align-items: center;
   justify-content: flex-end;

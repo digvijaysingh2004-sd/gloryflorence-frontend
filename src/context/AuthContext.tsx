@@ -143,22 +143,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const mockAccounts: Record<string, { role: User['role']; name: string; password: string }> = {
           // Backend seeded accounts
           'admin': { role: 'superadmin', name: 'System Administrator', password: 'Admin123!' },
-          'clinicadmin': { role: 'admin', name: 'Dr. Clinic Admin', password: 'Admin123!' },
-          'therapist': { role: 'physiotherapist', name: 'Dr. John Therapist', password: 'Therapist123!' },
-          'doctor': { role: 'doctor', name: 'Dr. Glory Doctor', password: 'Doctor123!' },
-          'receptionist': { role: 'receptionist', name: 'Front Desk Receptionist', password: 'Receptionist123!' },
-          'accountant': { role: 'accountant', name: 'Chief Accountant', password: 'Accountant123!' },
-          'patientuser': { role: 'patient', name: 'Registered Patient', password: 'Patient123!' },
+          'admin@gloryflorence.com': { role: 'superadmin', name: 'System Administrator', password: 'Admin123!' },
 
-          // Email presets
-          'admin@gloryflorence.com': { role: 'admin', name: 'Dr. Glory Admin', password: 'admin123' },
-          'superadmin@gloryflorence.com': { role: 'superadmin', name: 'Dr. Glory Super Admin', password: 'admin123' },
-          'therapist@gloryflorence.com': { role: 'physiotherapist', name: 'Dr. Glory Physiotherapist', password: 'admin123' },
-          'physio@gloryflorence.com': { role: 'physiotherapist', name: 'Dr. Glory Physiotherapist', password: 'admin123' },
-          'doctor@gloryflorence.com': { role: 'doctor', name: 'Dr. Glory Doctor', password: 'admin123' },
-          'receptionist@gloryflorence.com': { role: 'receptionist', name: 'Front Desk Receptionist', password: 'admin123' },
-          'accountant@gloryflorence.com': { role: 'accountant', name: 'Chief Accountant', password: 'admin123' },
-          'patient@gloryflorence.com': { role: 'patient', name: 'Emily Watson', password: 'admin123' },
+          'clinicadmin': { role: 'admin', name: 'Clinic Administrator', password: 'Admin123!' },
+          'clinicadmin@gloryflorence.com': { role: 'admin', name: 'Clinic Administrator', password: 'Admin123!' },
+
+          'therapist': { role: 'physiotherapist', name: 'Physiotherapist', password: 'Therapist123!' },
+          'therapist@gloryflorence.com': { role: 'physiotherapist', name: 'Physiotherapist', password: 'Therapist123!' },
+
+          'doctor': { role: 'doctor', name: 'Dr. Glory Doctor', password: 'Doctor123!' },
+          'doctor@gloryflorence.com': { role: 'doctor', name: 'Dr. Glory Doctor', password: 'Doctor123!' },
+
+          'receptionist': { role: 'receptionist', name: 'Front Desk Receptionist', password: 'Receptionist123!' },
+          'receptionist@gloryflorence.com': { role: 'receptionist', name: 'Front Desk Receptionist', password: 'Receptionist123!' },
+
+          'accountant': { role: 'accountant', name: 'Chief Accountant', password: 'Accountant123!' },
+          'accountant@gloryflorence.com': { role: 'accountant', name: 'Chief Accountant', password: 'Accountant123!' },
+
+          'patientuser': { role: 'patient', name: 'Registered Patient', password: 'Patient123!' },
+          'patientuser@gloryflorence.com': { role: 'patient', name: 'Registered Patient', password: 'Patient123!' },
+          'patient@gloryflorence.com': { role: 'patient', name: 'Registered Patient', password: 'Patient123!' },
         };
 
         const key = emailOrUsername.toLowerCase().trim();

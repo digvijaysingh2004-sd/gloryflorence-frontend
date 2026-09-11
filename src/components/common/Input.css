@@ -9,7 +9,7 @@
 .input-label {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: var(--slate-600);
+  color: var(--text-secondary);
 }
 
 .input-wrapper {
@@ -25,15 +25,15 @@
   font-size: 0.875rem;
   line-height: 1.4;
   border-radius: var(--radius-md);
-  border: 1px solid var(--slate-300);
-  background-color: white;
-  color: var(--slate-800);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
   transition: all var(--transition-fast);
   outline: none;
 }
 
 .input-field::placeholder {
-  color: var(--slate-400);
+  color: var(--text-muted);
 }
 
 /* Focus and active states */
@@ -42,33 +42,71 @@
   box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
 }
 
-/* Icon overrides */
-.input-field-has-icon-left {
-  padding-left: 40px;
+/* Date Picker Calendar Icon Visibility Fix */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  filter: invert(0.6);
+  opacity: 0.85;
+  transition: filter var(--transition-fast), opacity var(--transition-fast);
 }
 
-.input-field-has-icon-right {
-  padding-right: 40px;
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+[data-theme='dark'] input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(1.2);
+  opacity: 0.95;
+}
+
+/* Browser Autofill Overrides */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--text-primary) !important;
+  -webkit-box-shadow: 0 0 0px 1000px var(--bg-surface) inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Icon overrides */
+.input-field.input-field-has-icon-left {
+  padding-left: 42px !important;
+}
+
+.input-field.input-field-has-icon-right {
+  padding-right: 42px !important;
 }
 
 .input-icon-left {
   position: absolute;
   left: 14px;
-  color: var(--slate-450);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--slate-400, #94a3b8);
   display: flex;
   align-items: center;
   justify-content: center;
   pointer-events: none;
+  z-index: 2;
 }
 
 .input-icon-right {
   position: absolute;
   right: 14px;
-  color: var(--slate-450);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--slate-400, #94a3b8);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  z-index: 2;
 }
 
 /* Textarea specific */

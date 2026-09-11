@@ -304,10 +304,11 @@ export const PatientsPage: React.FC = () => {
 
   return (
     <div className="patients-container animate-fade-in">
-      {/* Top Banner Dashboard Actions */}
-      <div className="patients-header-actions animate-slide-in">
+      {/* Header */}
+      <div className="patients-header animate-slide-in">
         <div>
-          <p className="patients-subtitle">Manage medical profiles, history, and treatment plans.</p>
+          <h1 className="page-title">Patients Directory</h1>
+          <p className="page-subtitle">Manage medical profiles, clinical history, and treatment plans.</p>
         </div>
         <Button onClick={openAddModal} variant="primary" iconLeft={<Plus size={18} />}>
           Register Patient

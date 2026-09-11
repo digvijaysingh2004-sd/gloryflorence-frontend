@@ -34,7 +34,7 @@
 .metric-card-label {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: var(--slate-500);
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -42,7 +42,7 @@
 .metric-card-value {
   font-size: 1.875rem;
   font-weight: 700;
-  color: var(--slate-900);
+  color: var(--text-primary);
   line-height: 1;
 }
 
@@ -55,11 +55,11 @@
 }
 
 .metric-card-trend-up {
-  color: var(--success-600);
+  color: var(--success-500);
 }
 
 .metric-card-trend-down {
-  color: var(--danger-600);
+  color: var(--danger-500);
 }
 
 .metric-card-icon-container {
@@ -70,7 +70,12 @@
   height: 56px;
   border-radius: var(--radius-lg);
   background-color: var(--primary-50);
-  color: var(--primary-550);
+  color: var(--primary-600);
+}
+
+[data-theme='dark'] .metric-card-icon-container {
+  background-color: rgba(13, 148, 136, 0.2);
+  color: var(--primary-300);
 }
 
 /* Secondary Panels Layout */
@@ -99,23 +104,23 @@
 }
 
 .badge-scheduled {
-  background-color: var(--info-50);
-  color: var(--info-600);
+  background-color: rgba(14, 165, 233, 0.15);
+  color: #0ea5e9;
 }
 
 .badge-pending {
-  background-color: var(--warning-50);
-  color: var(--warning-600);
+  background-color: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
 }
 
 .badge-completed {
-  background-color: var(--success-50);
-  color: var(--success-600);
+  background-color: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
 }
 
 .badge-cancelled {
-  background-color: var(--danger-50);
-  color: var(--danger-600);
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
 }
 
 /* Quick Actions List */

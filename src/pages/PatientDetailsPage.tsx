@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -19,12 +19,15 @@ import {
   Sparkles,
   ChevronDown,
   ChevronUp,
+  ChevronLeft,
+  ChevronRight,
   Target,
   Calendar,
   Layers,
   Dumbbell,
   Search,
   Check,
+  CreditCard,
 } from 'lucide-react';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
@@ -59,8 +62,9 @@ export const PatientDetailsPage: React.FC = () => {
   const [patient, setPatient] = useState<Patient | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Tab State
+  // Tab State & Scroll Ref
   const [activeTab, setActiveTab] = useState<'overview' | 'assessments' | 'plans' | 'prescriptions' | 'history' | 'documents' | 'appointments' | 'billing'>('overview');
+  const tabsRef = useRef<HTMLDivElement>(null);
 
   // Modal States
   const [isVitalsModalOpen, setIsVitalsModalOpen] = useState(false);
@@ -872,28 +876,49 @@ export const PatientDetailsPage: React.FC = () => {
         <div className="tabs-content-column animate-slide-in">
           
           {/* Tab Navigation Header Buttons */}
-          <div className="tabs-header-bar">
-            {[
-              { id: 'overview', label: 'Overview' },
-              { id: 'assessments', label: 'Assessments', count: patient.assessments?.length },
-              { id: 'plans', label: 'Treatment Plans', count: patient.treatmentPlans?.length },
-              { id: 'prescriptions', label: 'Exercise Prescriptions', count: patient.prescriptions?.length },
-              { id: 'history', label: 'Medical History' },
-              { id: 'documents', label: 'Documents' },
-              { id: 'appointments', label: 'Appointments' },
-              { id: 'billing', label: 'Billing' },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`tab-btn-link ${activeTab === tab.id ? 'tab-btn-link-active' : ''}`}
-              >
-                <span>{tab.label}</span>
-                {tab.count !== undefined && tab.count > 0 && (
-                  <span className="tab-badge-pill">{tab.count}</span>
-                )}
-              </button>
-            ))}
+          <div className="tabs-header-wrapper">
+            <button
+              type="button"
+              className="tabs-scroll-btn left"
+              onClick={() => tabsRef.current?.scrollBy({ left: -200, behavior: 'smooth' })}
+              title="Scroll left"
+            >
+              <ChevronLeft size={16} />
+            </button>
+
+            <div className="tabs-header-bar" ref={tabsRef}>
+              {[
+                { id: 'overview', label: 'Overview', icon: <Activity size={15} /> },
+                { id: 'assessments', label: 'Assessments', count: patient.assessments?.length, icon: <Stethoscope size={15} /> },
+                { id: 'plans', label: 'Treatment Plans', count: patient.treatmentPlans?.length, icon: <Layers size={15} /> },
+                { id: 'prescriptions', label: 'Exercise Prescriptions', count: patient.prescriptions?.length, icon: <Dumbbell size={15} /> },
+                { id: 'history', label: 'Medical History', icon: <FileText size={15} /> },
+                { id: 'documents', label: 'Documents', icon: <Upload size={15} /> },
+                { id: 'appointments', label: 'Appointments', icon: <Calendar size={15} /> },
+                { id: 'billing', label: 'Billing', icon: <CreditCard size={15} /> },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`tab-btn-link ${activeTab === tab.id ? 'tab-btn-link-active' : ''}`}
+                >
+                  {tab.icon}
+                  <span>{tab.label}</span>
+                  {tab.count !== undefined && tab.count > 0 && (
+                    <span className="tab-badge-pill">{tab.count}</span>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              className="tabs-scroll-btn right"
+              onClick={() => tabsRef.current?.scrollBy({ left: 200, behavior: 'smooth' })}
+              title="Scroll right"
+            >
+              <ChevronRight size={16} />
+            </button>
           </div>
 
           {/* TAB BODY RENDER */}

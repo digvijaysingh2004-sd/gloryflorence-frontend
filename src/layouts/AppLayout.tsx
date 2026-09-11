@@ -13,12 +13,16 @@ import {
   LogOut,
   Menu,
   X,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import './AppLayout.css';
 
 export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -39,8 +43,11 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
   );
 
   const getPageTitle = () => {
+    if (location.pathname.startsWith('/patients/')) {
+      return 'Patient Profile & Clinical Details';
+    }
     const currentItem = rawNavigationItems.find(item => item.path === location.pathname);
-    return currentItem ? currentItem.label : 'Management System';
+    return currentItem ? currentItem.label : 'Clinical Management System';
   };
 
   const handleNavClick = (path: string) => {
@@ -124,6 +131,15 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
           </div>
 
           <div className="header-right">
+            <button
+              onClick={toggleTheme}
+              className="header-theme-toggle-btn"
+              title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
+              aria-label="Toggle dark/light theme"
+            >
+              {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+            </button>
+
             {user && (
               <div className="header-user-profile">
                 <div className="header-user-avatar">

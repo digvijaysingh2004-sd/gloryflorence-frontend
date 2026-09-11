@@ -1,18 +1,127 @@
+.login-page-wrapper {
+  width: 100%;
+}
+
 .login-form-header {
   margin-bottom: 24px;
-  text-align: center;
+  text-align: left;
 }
 
 .login-form-title {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: 700;
-  color: var(--slate-800);
-  margin-bottom: 4px;
+  color: var(--text-primary);
+  margin-bottom: 6px;
 }
 
 .login-form-subtitle {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* Quick Demo Role Tabs Bar (Patient Details Tab Bar Style) */
+.login-quick-section {
+  margin-bottom: 24px;
+}
+
+.quick-roles-header {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.quick-tabs-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  width: 100%;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 0.375rem 0.5rem;
+  box-shadow: var(--card-shadow);
+}
+
+.quick-tabs-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  overflow-x: auto;
+  white-space: nowrap;
+  scroll-behavior: smooth;
+  flex: 1;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 2px 0;
+}
+
+.quick-tabs-bar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.quick-tabs-scroll-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+}
+
+.quick-tabs-scroll-btn:hover {
+  background: var(--bg-hover);
+  color: var(--primary-500);
+  border-color: var(--primary-400);
+}
+
+.quick-tab-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+  padding: 0.45rem 0.85rem;
   font-size: 0.8125rem;
-  color: var(--slate-500);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border-radius: var(--radius-md, 8px);
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.quick-tab-btn:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-subtle);
+}
+
+.quick-tab-btn-active {
+  color: var(--primary-600);
+  background-color: var(--primary-50);
+  border-color: var(--primary-200);
+  font-weight: 600;
+}
+
+[data-theme='dark'] .quick-tab-btn-active {
+  color: var(--primary-300);
+  background-color: rgba(13, 148, 136, 0.25);
+  border-color: var(--primary-700);
 }
 
 .login-form {
@@ -25,7 +134,7 @@
   align-items: center;
   justify-content: space-between;
   margin-top: -6px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .login-remember-me {
@@ -33,7 +142,7 @@
   align-items: center;
   gap: 8px;
   font-size: 0.8125rem;
-  color: var(--slate-600);
+  color: var(--text-secondary);
   font-weight: 500;
   cursor: pointer;
 }
@@ -42,7 +151,7 @@
   width: 16px;
   height: 16px;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--slate-300);
+  border: 1px solid var(--border-color);
   accent-color: var(--primary-500);
   cursor: pointer;
 }
@@ -50,7 +159,7 @@
 .login-forgot-pwd {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: var(--primary-600);
+  color: var(--primary-500);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -58,26 +167,11 @@
 }
 
 .login-forgot-pwd:hover {
-  color: var(--primary-700);
+  color: var(--primary-600);
   text-decoration: underline;
 }
 
 .login-submit-btn {
-  margin-top: 8px;
+  margin-top: 4px;
   width: 100%;
-}
-
-.login-credentials-helper {
-  margin-top: 24px;
-  padding: 12px;
-  border-radius: var(--radius-md);
-  background-color: var(--slate-100);
-  border: 1px dashed var(--slate-300);
-  font-size: 0.75rem;
-  color: var(--slate-600);
-  line-height: 1.5;
-}
-
-.login-credentials-helper strong {
-  color: var(--slate-800);
 }

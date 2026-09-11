@@ -682,7 +682,9 @@ export const patientService = {
         const nameParts = (patientData.name || "").trim().split(" ");
         const firstName = nameParts[0] || "Patient";
         const lastName = nameParts.slice(1).join(" ") || "User";
+        const numericId = isNaN(Number(id)) ? id : Number(id);
         const payload = {
+          id: numericId,
           firstName,
           lastName,
           dateOfBirth: patientData.dateOfBirth

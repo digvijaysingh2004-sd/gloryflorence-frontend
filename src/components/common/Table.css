@@ -1,7 +1,7 @@
 .table-container {
   width: 100%;
   overflow-x: auto;
-  background-color: white;
+  background-color: var(--bg-surface);
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-color);
 }
@@ -14,14 +14,14 @@
 }
 
 .table-thead {
-  background-color: var(--slate-50);
+  background-color: var(--bg-subtle);
   border-bottom: 1px solid var(--border-color);
 }
 
 .table-th {
   padding: 14px 20px;
   font-weight: 600;
-  color: var(--slate-600);
+  color: var(--text-secondary);
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -29,7 +29,7 @@
 }
 
 .table-tbody {
-  color: var(--slate-800);
+  color: var(--text-primary);
 }
 
 .table-tr {
@@ -42,7 +42,7 @@
 }
 
 .table-tr-hoverable:hover {
-  background-color: var(--primary-50);
+  background-color: var(--bg-subtle);
 }
 
 .table-td {
@@ -58,7 +58,7 @@
 
 .table-skeleton-bar {
   height: 16px;
-  background-color: var(--slate-200);
+  background-color: var(--border-color);
   border-radius: var(--radius-sm);
   width: 80%;
 }
@@ -71,7 +71,7 @@
 .table-empty-cell {
   padding: 48px 24px;
   text-align: center;
-  color: var(--slate-500);
+  color: var(--text-muted);
 }
 
 /* Table Footer / Pagination Wrapper */
@@ -81,5 +81,5 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: var(--slate-50);
+  background-color: var(--bg-subtle);
 }
