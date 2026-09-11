@@ -323,6 +323,22 @@ export const mapBackendExercise = (dto: any): Exercise => {
   };
 };
 
+export const CATEGORY_NAME_TO_ID: Record<string, number> = {
+  'Manual Therapy': 1,
+  'Electrotherapy': 2,
+  'Exercise Therapy': 3,
+  'Knee Rehabilitation': 3,
+  'Strengthening': 3,
+  'Hydrotherapy': 4,
+  'Mobility & Stretching': 4,
+  'Specialized Rehabilitation': 5,
+  'Core Stability': 5,
+  'Balance & Coordination': 5,
+  'Postural Correction': 5,
+  'Cardiovascular': 6,
+  'Other': 6,
+};
+
 export const treatmentService = {
   // Treatment Types API
   getAllTreatments: async (filters?: {
@@ -331,30 +347,26 @@ export const treatmentService = {
     search?: string;
   }): Promise<TreatmentType[]> => {
     try {
-      const token = localStorage.getItem('gf_auth_token');
-      if (token && !token.startsWith('mock_')) {
-        const response = await api.get('/treatment-types', { params: filters });
-        const rawList = Array.isArray(response.data)
-          ? response.data
-          : (response.data?.items || []);
-        let mapped: TreatmentType[] = rawList.map(mapBackendTreatmentType);
-        if (filters?.category && filters.category !== 'All') {
-          mapped = mapped.filter((t) => t.category.toLowerCase() === filters.category?.toLowerCase());
-        }
-        if (filters?.status && filters.status !== 'All') {
-          mapped = mapped.filter((t) => t.status === filters.status);
-        }
-        if (filters?.search) {
-          const q = filters.search.toLowerCase();
-          mapped = mapped.filter(
-            (t) =>
-              t.name.toLowerCase().includes(q) ||
-              t.description.toLowerCase().includes(q)
-          );
-        }
-        return mapped;
+      const response = await api.get('/treatment-types', { params: filters });
+      const rawList = Array.isArray(response.data)
+        ? response.data
+        : (response.data?.items || []);
+      let mapped: TreatmentType[] = rawList.map(mapBackendTreatmentType);
+      if (filters?.category && filters.category !== 'All') {
+        mapped = mapped.filter((t) => t.category.toLowerCase() === filters.category?.toLowerCase());
       }
-      throw new Error('Offline mode');
+      if (filters?.status && filters.status !== 'All') {
+        mapped = mapped.filter((t) => t.status === filters.status);
+      }
+      if (filters?.search) {
+        const q = filters.search.toLowerCase();
+        mapped = mapped.filter(
+          (t) =>
+            t.name.toLowerCase().includes(q) ||
+            t.description.toLowerCase().includes(q)
+        );
+      }
+      return mapped;
     } catch {
       let list = getTreatmentsStore();
 
@@ -380,12 +392,8 @@ export const treatmentService = {
 
   getTreatmentById: async (id: string): Promise<TreatmentType> => {
     try {
-      const token = localStorage.getItem('gf_auth_token');
-      if (token && !token.startsWith('mock_')) {
-        const response = await api.get(`/treatment-types/${id}`);
-        return mapBackendTreatmentType(response.data);
-      }
-      throw new Error('Offline mode');
+      const response = await api.get(`/treatment-types/${id}`);
+      return mapBackendTreatmentType(response.data);
     } catch {
       const list = getTreatmentsStore();
       const item = list.find((t) => t.id === id);
@@ -395,13 +403,19 @@ export const treatmentService = {
   },
 
   createTreatment: async (data: Omit<TreatmentType, 'id'>): Promise<TreatmentType> => {
+    const categoryId = (data as any).categoryId || CATEGORY_NAME_TO_ID[data.category] || 1;
+    const payload = {
+      categoryId,
+      name: data.name,
+      description: data.description || '',
+      defaultDurationMinutes: Number(data.durationMinutes) || 45,
+      defaultPrice: Number(data.defaultPrice) || 0,
+      isActive: data.status === 'Active',
+    };
+
     try {
-      const token = localStorage.getItem('gf_auth_token');
-      if (token && !token.startsWith('mock_')) {
-        const response = await api.post('/treatment-types', data);
-        return response.data;
-      }
-      throw new Error('Offline mode');
+      const response = await api.post('/treatment-types', payload);
+      return mapBackendTreatmentType(response.data);
     } catch {
       const list = getTreatmentsStore();
       const newItem: TreatmentType = {
@@ -415,13 +429,20 @@ export const treatmentService = {
   },
 
   updateTreatment: async (id: string, data: Partial<TreatmentType>): Promise<TreatmentType> => {
+    const categoryId = (data as any).categoryId || (data.category ? CATEGORY_NAME_TO_ID[data.category] : 1);
+    const payload = {
+      id: parseInt(id, 10) || 1,
+      categoryId,
+      name: data.name || '',
+      description: data.description || '',
+      defaultDurationMinutes: Number(data.durationMinutes) || 45,
+      defaultPrice: Number(data.defaultPrice) || 0,
+      isActive: data.status !== 'Inactive',
+    };
+
     try {
-      const token = localStorage.getItem('gf_auth_token');
-      if (token && !token.startsWith('mock_')) {
-        const response = await api.put(`/treatment-types/${id}`, data);
-        return response.data;
-      }
-      throw new Error('Offline mode');
+      const response = await api.put(`/treatment-types/${id}`, payload);
+      return mapBackendTreatmentType(response.data);
     } catch {
       const list = getTreatmentsStore();
       const index = list.findIndex((t) => t.id === id);
@@ -436,12 +457,8 @@ export const treatmentService = {
 
   deleteTreatment: async (id: string): Promise<boolean> => {
     try {
-      const token = localStorage.getItem('gf_auth_token');
-      if (token && !token.startsWith('mock_')) {
-        await api.delete(`/treatment-types/${id}`);
-        return true;
-      }
-      throw new Error('Offline mode');
+      await api.delete(`/treatment-types/${id}`);
+      return true;
     } catch {
       const list = getTreatmentsStore();
       const filtered = list.filter((t) => t.id !== id);
@@ -458,35 +475,31 @@ export const treatmentService = {
     search?: string;
   }): Promise<Exercise[]> => {
     try {
-      const token = localStorage.getItem('gf_auth_token');
-      if (token && !token.startsWith('mock_')) {
-        const response = await api.get('/exercises', { params: filters });
-        const rawList = Array.isArray(response.data)
-          ? response.data
-          : (response.data?.items || []);
-        let mapped: Exercise[] = rawList.map(mapBackendExercise);
-        if (filters?.category && filters.category !== 'All') {
-          mapped = mapped.filter((e) => e.category.toLowerCase() === filters.category?.toLowerCase());
-        }
-        if (filters?.difficulty && filters.difficulty !== 'All') {
-          mapped = mapped.filter((e) => e.difficulty === filters.difficulty);
-        }
-        if (filters?.muscleGroup && filters.muscleGroup !== 'All') {
-          mapped = mapped.filter((e) => e.targetMuscleGroup.toLowerCase().includes(filters.muscleGroup!.toLowerCase()));
-        }
-        if (filters?.search) {
-          const q = filters.search.toLowerCase();
-          mapped = mapped.filter(
-            (e) =>
-              e.title.toLowerCase().includes(q) ||
-              e.targetMuscleGroup.toLowerCase().includes(q) ||
-              e.equipment.toLowerCase().includes(q) ||
-              e.category.toLowerCase().includes(q)
-          );
-        }
-        return mapped;
+      const response = await api.get('/exercises', { params: filters });
+      const rawList = Array.isArray(response.data)
+        ? response.data
+        : (response.data?.items || []);
+      let mapped: Exercise[] = rawList.map(mapBackendExercise);
+      if (filters?.category && filters.category !== 'All') {
+        mapped = mapped.filter((e) => e.category.toLowerCase() === filters.category?.toLowerCase());
       }
-      throw new Error('Offline mode');
+      if (filters?.difficulty && filters.difficulty !== 'All') {
+        mapped = mapped.filter((e) => e.difficulty === filters.difficulty);
+      }
+      if (filters?.muscleGroup && filters.muscleGroup !== 'All') {
+        mapped = mapped.filter((e) => e.targetMuscleGroup.toLowerCase().includes(filters.muscleGroup!.toLowerCase()));
+      }
+      if (filters?.search) {
+        const q = filters.search.toLowerCase();
+        mapped = mapped.filter(
+          (e) =>
+            e.title.toLowerCase().includes(q) ||
+            e.targetMuscleGroup.toLowerCase().includes(q) ||
+            e.equipment.toLowerCase().includes(q) ||
+            e.category.toLowerCase().includes(q)
+        );
+      }
+      return mapped;
     } catch {
       let list = getExercisesStore();
 
@@ -516,12 +529,8 @@ export const treatmentService = {
 
   getExerciseById: async (id: string): Promise<Exercise> => {
     try {
-      const token = localStorage.getItem('gf_auth_token');
-      if (token && !token.startsWith('mock_')) {
-        const response = await api.get(`/exercises/${id}`);
-        return mapBackendExercise(response.data);
-      }
-      throw new Error('Offline mode');
+      const response = await api.get(`/exercises/${id}`);
+      return mapBackendExercise(response.data);
     } catch {
       const list = getExercisesStore();
       const item = list.find((e) => e.id === id);
@@ -531,13 +540,20 @@ export const treatmentService = {
   },
 
   createExercise: async (data: Omit<Exercise, 'id'>): Promise<Exercise> => {
+    const categoryId = (data as any).categoryId || CATEGORY_NAME_TO_ID[data.category] || 3;
+    const payload = {
+      categoryId,
+      name: data.title,
+      description: data.precautions || data.targetMuscleGroup || data.title,
+      instructions: Array.isArray(data.instructions) ? data.instructions.join('\n') : (data.instructions || ''),
+      videoUrl: data.videoUrl || '',
+      imageUrl: data.imageUrl || '',
+      isActive: true,
+    };
+
     try {
-      const token = localStorage.getItem('gf_auth_token');
-      if (token && !token.startsWith('mock_')) {
-        const response = await api.post('/exercises', data);
-        return response.data;
-      }
-      throw new Error('Offline mode');
+      const response = await api.post('/exercises', payload);
+      return mapBackendExercise(response.data);
     } catch {
       const list = getExercisesStore();
       const newItem: Exercise = {
@@ -551,13 +567,21 @@ export const treatmentService = {
   },
 
   updateExercise: async (id: string, data: Partial<Exercise>): Promise<Exercise> => {
+    const categoryId = (data as any).categoryId || (data.category ? CATEGORY_NAME_TO_ID[data.category] : 3);
+    const payload = {
+      id: parseInt(id, 10) || 1,
+      categoryId,
+      name: data.title || '',
+      description: data.precautions || data.targetMuscleGroup || data.title || '',
+      instructions: Array.isArray(data.instructions) ? data.instructions.join('\n') : (data.instructions || ''),
+      videoUrl: data.videoUrl || '',
+      imageUrl: data.imageUrl || '',
+      isActive: true,
+    };
+
     try {
-      const token = localStorage.getItem('gf_auth_token');
-      if (token && !token.startsWith('mock_')) {
-        const response = await api.put(`/exercises/${id}`, data);
-        return response.data;
-      }
-      throw new Error('Offline mode');
+      const response = await api.put(`/exercises/${id}`, payload);
+      return mapBackendExercise(response.data);
     } catch {
       const list = getExercisesStore();
       const index = list.findIndex((e) => e.id === id);
@@ -572,12 +596,8 @@ export const treatmentService = {
 
   deleteExercise: async (id: string): Promise<boolean> => {
     try {
-      const token = localStorage.getItem('gf_auth_token');
-      if (token && !token.startsWith('mock_')) {
-        await api.delete(`/exercises/${id}`);
-        return true;
-      }
-      throw new Error('Offline mode');
+      await api.delete(`/exercises/${id}`);
+      return true;
     } catch {
       const list = getExercisesStore();
       const filtered = list.filter((e) => e.id !== id);

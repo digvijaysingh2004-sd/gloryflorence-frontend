@@ -290,42 +290,38 @@ export const appointmentService = {
     search?: string;
   }): Promise<Appointment[]> => {
     try {
-      const token = localStorage.getItem('gf_auth_token');
-      if (token && !token.startsWith('mock_')) {
-        const response = await api.get('/appointments', { params: filters });
-        const rawList = Array.isArray(response.data)
-          ? response.data
-          : (response.data?.items || []);
-        let mapped: Appointment[] = rawList.map(mapBackendAppointment);
+      const response = await api.get('/appointments', { params: filters });
+      const rawList = Array.isArray(response.data)
+        ? response.data
+        : (response.data?.items || []);
+      let mapped: Appointment[] = rawList.map(mapBackendAppointment);
 
-        if (filters?.date) {
-          mapped = mapped.filter((a) => a.date === filters.date);
-        }
-        if (filters?.therapist && filters.therapist !== 'All') {
-          mapped = mapped.filter((a) => a.therapistName === filters.therapist);
-        }
-        if (filters?.status && filters.status !== 'All') {
-          mapped = mapped.filter((a) => a.status === filters.status);
-        }
-        if (filters?.search) {
-          const q = filters.search.toLowerCase();
-          mapped = mapped.filter(
-            (a) =>
-              a.patientName?.toLowerCase().includes(q) ||
-              a.therapistName.toLowerCase().includes(q) ||
-              a.type.toLowerCase().includes(q) ||
-              a.notes?.toLowerCase().includes(q)
-          );
-        }
-
-        mapped.sort((a, b) => {
-          if (a.date !== b.date) return a.date.localeCompare(b.date);
-          return timeToMinutes(a.time) - timeToMinutes(b.time);
-        });
-
-        return mapped;
+      if (filters?.date) {
+        mapped = mapped.filter((a) => a.date === filters.date);
       }
-      throw new Error('Offline mode');
+      if (filters?.therapist && filters.therapist !== 'All') {
+        mapped = mapped.filter((a) => a.therapistName === filters.therapist);
+      }
+      if (filters?.status && filters.status !== 'All') {
+        mapped = mapped.filter((a) => a.status === filters.status);
+      }
+      if (filters?.search) {
+        const q = filters.search.toLowerCase();
+        mapped = mapped.filter(
+          (a) =>
+            a.patientName?.toLowerCase().includes(q) ||
+            a.therapistName.toLowerCase().includes(q) ||
+            a.type.toLowerCase().includes(q) ||
+            a.notes?.toLowerCase().includes(q)
+        );
+      }
+
+      mapped.sort((a, b) => {
+        if (a.date !== b.date) return a.date.localeCompare(b.date);
+        return timeToMinutes(a.time) - timeToMinutes(b.time);
+      });
+
+      return mapped;
     } catch {
       let list = getLocalStore();
 
@@ -361,12 +357,8 @@ export const appointmentService = {
 
   getById: async (id: string): Promise<Appointment> => {
     try {
-      const token = localStorage.getItem('gf_auth_token');
-      if (token && !token.startsWith('mock_')) {
-        const response = await api.get(`/appointments/${id}`);
-        return mapBackendAppointment(response.data);
-      }
-      throw new Error('Offline mode');
+      const response = await api.get(`/appointments/${id}`);
+      return mapBackendAppointment(response.data);
     } catch {
       const list = getLocalStore();
       const apt = list.find((a) => a.id === id);
@@ -377,29 +369,25 @@ export const appointmentService = {
 
   create: async (appointmentData: Omit<Appointment, 'id'>): Promise<Appointment> => {
     try {
-      const token = localStorage.getItem('gf_auth_token');
-      if (token && !token.startsWith('mock_')) {
-        const duration = appointmentData.durationMinutes || 45;
-        const start24 = timeTo24h(appointmentData.time || '10:00 AM');
-        const startMins = timeToMinutes(appointmentData.time || '10:00 AM');
-        const end24 = minutesToTimeStr(startMins + duration);
-        const endTime24 = timeTo24h(end24);
+      const duration = appointmentData.durationMinutes || 45;
+      const start24 = timeTo24h(appointmentData.time || '10:00 AM');
+      const startMins = timeToMinutes(appointmentData.time || '10:00 AM');
+      const end24 = minutesToTimeStr(startMins + duration);
+      const endTime24 = timeTo24h(end24);
 
-        const payload = {
-          patientId: parseInt(appointmentData.patientId || '1', 10) || 1,
-          physiotherapistId: parseInt(appointmentData.therapistId || '3', 10) || 3,
-          appointmentTypeId: 2,
-          appointmentDate: appointmentData.date ? `${appointmentData.date}T00:00:00Z` : new Date().toISOString(),
-          startTime: start24,
-          endTime: endTime24,
-          reason: appointmentData.type || 'Physiotherapy Consultation',
-          notes: appointmentData.notes || '',
-        };
+      const payload = {
+        patientId: parseInt(appointmentData.patientId || '1', 10) || 1,
+        physiotherapistId: parseInt(appointmentData.therapistId || '3', 10) || 3,
+        appointmentTypeId: 2,
+        appointmentDate: appointmentData.date ? `${appointmentData.date}T00:00:00Z` : new Date().toISOString(),
+        startTime: start24,
+        endTime: endTime24,
+        reason: appointmentData.type || 'Physiotherapy Consultation',
+        notes: appointmentData.notes || '',
+      };
 
-        const response = await api.post('/appointments', payload);
-        return mapBackendAppointment(response.data);
-      }
-      throw new Error('Offline mode');
+      const response = await api.post('/appointments', payload);
+      return mapBackendAppointment(response.data);
     } catch {
       const list = getLocalStore();
       const newApt: Appointment = {
@@ -415,12 +403,8 @@ export const appointmentService = {
 
   update: async (id: string, updateData: Partial<Appointment>): Promise<Appointment> => {
     try {
-      const token = localStorage.getItem('gf_auth_token');
-      if (token && !token.startsWith('mock_')) {
-        const response = await api.put(`/appointments/${id}`, updateData);
-        return response.data;
-      }
-      throw new Error('Offline mode');
+      const response = await api.put(`/appointments/${id}`, updateData);
+      return response.data;
     } catch {
       const list = getLocalStore();
       const index = list.findIndex((a) => a.id === id);
@@ -440,17 +424,52 @@ export const appointmentService = {
     id: string,
     status: 'Scheduled' | 'Completed' | 'Cancelled' | 'No Show'
   ): Promise<Appointment> => {
+    if (status === 'Cancelled') {
+      try {
+        await api.put(`/appointments/${id}/cancel`, { cancellationReason: 'Cancelled from system UI' });
+      } catch {
+        // Fallback to update
+      }
+    }
     return appointmentService.update(id, { status });
+  },
+
+  // 3.5 Reschedule Appointment: PUT /api/appointments/{id}/reschedule
+  reschedule: async (id: string, data: { newAppointmentDate: string; newStartTime: string; newEndTime: string; reason?: string }): Promise<boolean> => {
+    try {
+      await api.put(`/appointments/${id}/reschedule`, data);
+      return true;
+    } catch {
+      console.warn(`[Offline Mode] Rescheduling appointment ${id}`);
+      return true;
+    }
+  },
+
+  // 3.6 Cancel Appointment: PUT /api/appointments/{id}/cancel
+  cancel: async (id: string, cancellationReason: string): Promise<boolean> => {
+    try {
+      await api.put(`/appointments/${id}/cancel`, { cancellationReason });
+      return true;
+    } catch {
+      console.warn(`[Offline Mode] Cancelling appointment ${id}`);
+      return true;
+    }
+  },
+
+  // 3.8 Check Appointment Conflict: GET /api/appointments/check-conflict
+  checkApiConflict: async (params: { physiotherapistId: number; date: string; startTime: string; endTime: string; excludeAppointmentId?: number }): Promise<boolean> => {
+    try {
+      const response = await api.get('/appointments/check-conflict', { params });
+      return response.data === true;
+    } catch {
+      return false;
+    }
   },
 
   delete: async (id: string): Promise<boolean> => {
     try {
-      const token = localStorage.getItem('gf_auth_token');
-      if (token && !token.startsWith('mock_')) {
-        await api.delete(`/appointments/${id}`);
-        return true;
-      }
-      throw new Error('Offline mode');
+      await api.delete(`/appointments/${id}`);
+      return true;
     } catch {
       const list = getLocalStore();
       const filtered = list.filter((a) => a.id !== id);
@@ -458,4 +477,65 @@ export const appointmentService = {
       return true;
     }
   },
+
+  // --- Section 4 Appointment Types Methods ---
+
+  // 4.1 Get All Appointment Types: GET /api/appointment-types
+  fetchAppointmentTypesApi: async (isActive?: boolean) => {
+    try {
+      const response = await api.get('/appointment-types', { params: { isActive } });
+      return Array.isArray(response.data) ? response.data : response.data?.items || [];
+    } catch {
+      return APPOINTMENT_TYPES.map((name, idx) => ({
+        id: idx + 1,
+        name,
+        durationMinutes: 45,
+        description: `${name} clinical service`,
+        isActive: true,
+        createdAt: new Date().toISOString(),
+      }));
+    }
+  },
+
+  // 4.2 Get Appointment Type by ID: GET /api/appointment-types/{id}
+  getAppointmentTypeById: async (id: number) => {
+    try {
+      const response = await api.get(`/appointment-types/${id}`);
+      return response.data;
+    } catch {
+      return { id, name: 'Initial Assessment', durationMinutes: 60, description: 'Evaluation', isActive: true };
+    }
+  },
+
+  // 4.3 Create Appointment Type: POST /api/appointment-types
+  createAppointmentType: async (data: { name: string; durationMinutes?: number; description?: string; isActive?: boolean }) => {
+    try {
+      const response = await api.post('/appointment-types', data);
+      return response.data;
+    } catch {
+      return { id: Date.now(), ...data };
+    }
+  },
+
+  // 4.4 Update Appointment Type: PUT /api/appointment-types/{id}
+  updateAppointmentType: async (id: number, data: { name: string; durationMinutes: number; description: string; isActive: boolean }) => {
+    try {
+      await api.put(`/appointment-types/${id}`, { id, ...data });
+      return true;
+    } catch {
+      return true;
+    }
+  },
+
+  // 4.5 Delete Appointment Type: DELETE /api/appointment-types/{id}
+  deleteAppointmentType: async (id: number) => {
+    try {
+      await api.delete(`/appointment-types/${id}`);
+      return true;
+    } catch {
+      return true;
+    }
+  },
 };
+
+

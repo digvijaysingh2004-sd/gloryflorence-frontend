@@ -121,17 +121,6 @@ export const LoginPage: React.FC = () => {
           Sign In
         </Button>
 
-        <div className="login-credentials-helper">
-          💡 <strong>Backend Seed Accounts (.NET 8):</strong>
-          <br />
-          Therapist: <code>therapist</code> / <code>Therapist123!</code>
-          <br />
-          Admin: <code>admin</code> / <code>Admin123!</code>
-          <br />
-          <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>
-            (Or offline demo: <code>admin@gloryflorence.com</code> / <code>admin123</code>)
-          </span>
-        </div>
       </form>
     </div>
   );

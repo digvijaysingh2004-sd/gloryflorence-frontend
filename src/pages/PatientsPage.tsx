@@ -338,14 +338,14 @@ export const PatientsPage: React.FC = () => {
           <h4 className="form-section-title">
             <UserPlus size={18} /> Primary Credentials
           </h4>
-          <div className="form-grid-3">
+          <div className="form-grid-2">
             <Input
               label="Full Name *"
               name="name"
               value={formData.name}
               onChange={handleInputChange}
               error={formErrors.name}
-              placeholder="e.g. Emily Watson"
+              placeholder="Enter full name"
             />
             <Input
               label="Phone Number *"
@@ -353,8 +353,11 @@ export const PatientsPage: React.FC = () => {
               value={formData.phone}
               onChange={handleInputChange}
               error={formErrors.phone}
-              placeholder="e.g. +1 (555) 019-2834"
+              placeholder="+1 (555) 000-0000"
             />
+          </div>
+
+          <div className="form-grid-2">
             <Input
               label="Email Address"
               name="email"
@@ -362,11 +365,8 @@ export const PatientsPage: React.FC = () => {
               value={formData.email}
               onChange={handleInputChange}
               error={formErrors.email}
-              placeholder="e.g. emily@gmail.com"
+              placeholder="name@example.com"
             />
-          </div>
-
-          <div className="form-grid-3">
             <div className="input-group">
               <label className="input-label">Gender *</label>
               <select
@@ -380,6 +380,9 @@ export const PatientsPage: React.FC = () => {
                 <option value="Other">Other</option>
               </select>
             </div>
+          </div>
+
+          <div className="form-grid-2">
             <Input
               label="Date of Birth *"
               name="dateOfBirth"
@@ -408,7 +411,7 @@ export const PatientsPage: React.FC = () => {
             </div>
           </div>
 
-          <h4 className="form-section-title" style={{ marginTop: '1.5rem' }}>
+          <h4 className="form-section-title" style={{ marginTop: '1.25rem' }}>
             📍 Address Information
           </h4>
           <div className="form-grid-2">
@@ -417,34 +420,34 @@ export const PatientsPage: React.FC = () => {
               name="address"
               value={formData.address}
               onChange={handleInputChange}
-              placeholder="e.g. 42 Wallaby Way"
+              placeholder="Enter street address"
             />
-            <div className="form-grid-3" style={{ gap: '0.75rem', margin: 0, padding: 0 }}>
-              <Input
-                label="City"
-                name="city"
-                value={formData.city}
-                onChange={handleInputChange}
-                placeholder="Sydney"
-              />
-              <Input
-                label="State"
-                name="state"
-                value={formData.state}
-                onChange={handleInputChange}
-                placeholder="NSW"
-              />
-              <Input
-                label="Country"
-                name="country"
-                value={formData.country}
-                onChange={handleInputChange}
-                placeholder="Australia"
-              />
-            </div>
+            <Input
+              label="City"
+              name="city"
+              value={formData.city}
+              onChange={handleInputChange}
+              placeholder="City"
+            />
+          </div>
+          <div className="form-grid-2">
+            <Input
+              label="State"
+              name="state"
+              value={formData.state}
+              onChange={handleInputChange}
+              placeholder="State"
+            />
+            <Input
+              label="Country"
+              name="country"
+              value={formData.country}
+              onChange={handleInputChange}
+              placeholder="Country"
+            />
           </div>
 
-          <h4 className="form-section-title" style={{ marginTop: '1.5rem' }}>
+          <h4 className="form-section-title" style={{ marginTop: '1.25rem' }}>
             🚨 Emergency Contact
           </h4>
           <div className="form-grid-2">
@@ -453,14 +456,14 @@ export const PatientsPage: React.FC = () => {
               name="emergencyContactName"
               value={formData.emergencyContactName}
               onChange={handleInputChange}
-              placeholder="e.g. John Watson"
+              placeholder="Emergency contact full name"
             />
             <Input
               label="Contact Phone"
               name="emergencyContactPhone"
               value={formData.emergencyContactPhone}
               onChange={handleInputChange}
-              placeholder="e.g. +1 (555) 019-2835"
+              placeholder="+1 (555) 000-0000"
             />
           </div>
 
@@ -484,7 +487,7 @@ export const PatientsPage: React.FC = () => {
       >
         <form onSubmit={handleEditSubmit} className="patient-form">
           <h4 className="form-section-title">Primary Credentials</h4>
-          <div className="form-grid-3">
+          <div className="form-grid-2">
             <Input
               label="Full Name *"
               name="name"
@@ -499,6 +502,9 @@ export const PatientsPage: React.FC = () => {
               onChange={handleInputChange}
               error={formErrors.phone}
             />
+          </div>
+
+          <div className="form-grid-2">
             <Input
               label="Email Address"
               name="email"
@@ -507,9 +513,6 @@ export const PatientsPage: React.FC = () => {
               onChange={handleInputChange}
               error={formErrors.email}
             />
-          </div>
-
-          <div className="form-grid-3">
             <div className="input-group">
               <label className="input-label">Gender *</label>
               <select
@@ -523,6 +526,9 @@ export const PatientsPage: React.FC = () => {
                 <option value="Other">Other</option>
               </select>
             </div>
+          </div>
+
+          <div className="form-grid-2">
             <Input
               label="Date of Birth *"
               name="dateOfBirth"
@@ -545,7 +551,7 @@ export const PatientsPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="form-grid-3">
+          <div className="form-grid-2">
             <div className="input-group">
               <label className="input-label">Blood Group</label>
               <select
@@ -566,7 +572,7 @@ export const PatientsPage: React.FC = () => {
             </div>
           </div>
 
-          <h4 className="form-section-title" style={{ marginTop: '1.5rem' }}>
+          <h4 className="form-section-title" style={{ marginTop: '1.25rem' }}>
             📍 Address Information
           </h4>
           <div className="form-grid-2">
@@ -576,26 +582,26 @@ export const PatientsPage: React.FC = () => {
               value={formData.address}
               onChange={handleInputChange}
             />
-            <div className="form-grid-3" style={{ gap: '0.75rem', margin: 0, padding: 0 }}>
-              <Input
-                label="City"
-                name="city"
-                value={formData.city}
-                onChange={handleInputChange}
-              />
-              <Input
-                label="State"
-                name="state"
-                value={formData.state}
-                onChange={handleInputChange}
-              />
-              <Input
-                label="Country"
-                name="country"
-                value={formData.country}
-                onChange={handleInputChange}
-              />
-            </div>
+            <Input
+              label="City"
+              name="city"
+              value={formData.city}
+              onChange={handleInputChange}
+            />
+          </div>
+          <div className="form-grid-2">
+            <Input
+              label="State"
+              name="state"
+              value={formData.state}
+              onChange={handleInputChange}
+            />
+            <Input
+              label="Country"
+              name="country"
+              value={formData.country}
+              onChange={handleInputChange}
+            />
           </div>
 
           <h4 className="form-section-title" style={{ marginTop: '1.5rem' }}>

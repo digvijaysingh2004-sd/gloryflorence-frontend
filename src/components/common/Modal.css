@@ -4,31 +4,31 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(15, 23, 42, 0.45);
-  backdrop-filter: blur(4px);
+  background-color: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: 16px;
+  padding: 24px;
   animation: fadeIn var(--transition-fast) forwards;
 }
 
 .modal-container {
   background-color: white;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-xl);
-  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--border-color, #e2e8f0);
   width: 100%;
-  max-height: 90vh;
+  max-height: 85vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: modalScaleIn var(--transition-normal) cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: modalScaleIn var(--transition-normal, 0.2s ease) cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 @keyframes modalScaleIn {
-  from { transform: scale(0.95); opacity: 0; }
+  from { transform: scale(0.96); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
 }
 
@@ -38,15 +38,15 @@
 }
 
 .modal-md {
-  max-width: 600px;
+  max-width: 620px;
 }
 
 .modal-lg {
-  max-width: 800px;
+  max-width: 860px;
 }
 
 .modal-xl {
-  max-width: 1140px;
+  max-width: 1100px;
 }
 
 /* Header */

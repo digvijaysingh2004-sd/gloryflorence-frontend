@@ -71,3 +71,16 @@ $RECYCLE.BIN/
 .stylelintcache
 .oxlintcache
 .prettiercache
+
+# Ignore markdown documentation files
+*.md
+
+# Ignore sensitive password and credential files
+*password*
+*passwords*
+*credential*
+*credentials*
+*secret*
+*secrets*
+backend_details.txt
+

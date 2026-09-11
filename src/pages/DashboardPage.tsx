@@ -15,17 +15,11 @@ import { Button } from '../components/common/Button';
 import { Modal } from '../components/common/Modal';
 import { Input } from '../components/common/Input';
 import { useNotification } from '../context/NotificationContext';
+import { appointmentService } from '../services/appointmentService';
+import { patientService } from '../services/patientService';
+import type { Appointment } from '../types';
 import api from '../services/api';
 import './DashboardPage.css';
-
-interface Appointment {
-  id: string;
-  patientName: string;
-  physioName: string;
-  time: string;
-  treatment: string;
-  status: 'scheduled' | 'pending' | 'completed' | 'cancelled';
-}
 
 export const DashboardPage: React.FC = () => {
   const { showToast } = useNotification();
@@ -40,68 +34,72 @@ export const DashboardPage: React.FC = () => {
   const [newTime, setNewTime] = useState('');
   const [newTreatment, setNewTreatment] = useState('');
 
-  // Table Data State
-  const [appointments, setAppointments] = useState<Appointment[]>([
-    {
-      id: 'apt_1',
-      patientName: 'Emma Watson',
-      physioName: 'Dr. Glory Florence',
-      time: '09:30 AM',
-      treatment: 'Spinal Decompression',
-      status: 'completed',
-    },
-    {
-      id: 'apt_2',
-      patientName: 'John Doe',
-      physioName: 'Alex Mercer',
-      time: '11:00 AM',
-      treatment: 'Knee Joint Mobilization',
-      status: 'scheduled',
-    },
-    {
-      id: 'apt_3',
-      patientName: 'Sarah Jenkins',
-      physioName: 'Dr. Glory Florence',
-      time: '02:00 PM',
-      treatment: 'Cervical Traction',
-      status: 'pending',
-    },
-    {
-      id: 'apt_4',
-      patientName: 'Michael Chang',
-      physioName: 'Emma Stone',
-      time: '04:30 PM',
-      treatment: 'Myofascial Release',
-      status: 'scheduled',
-    },
-  ]);
+  // Data States
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [activePatientCount, setActivePatientCount] = useState<number>(0);
+
+  // Computed metrics
+  const completedTodayCount = React.useMemo(
+    () => appointments.filter((a) => a.status === 'Completed').length,
+    [appointments]
+  );
+  const activeSessionsCount = React.useMemo(
+    () => appointments.filter((a) => a.status === 'Scheduled').length,
+    [appointments]
+  );
+  const totalPendingFee = React.useMemo(
+    () => appointments.reduce((sum, a) => sum + (a.fee || 65), 0),
+    [appointments]
+  );
+
+  // Load appointments and patients from services
+  const loadDashboardData = React.useCallback(async () => {
+    setIsTableLoading(true);
+    try {
+      const [apptsData, patientsData] = await Promise.all([
+        appointmentService.getAll({ date: new Date().toISOString().split('T')[0] }),
+        patientService.getAll(),
+      ]);
+      setAppointments(apptsData);
+      setActivePatientCount(patientsData.length);
+    } catch {
+      showToast('Failed to load dashboard data.', 'error');
+    } finally {
+      setIsTableLoading(false);
+    }
+  }, [showToast]);
+
+  React.useEffect(() => {
+    loadDashboardData();
+  }, [loadDashboardData]);
 
   // Handle Form Submission inside Modal
-  const handleCreateAppointment = (e: React.FormEvent) => {
+  const handleCreateAppointment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newPatient || !newPhysio || !newTime || !newTreatment) {
-      showToast('Please fill out all fields', 'warning');
+    if (!newPatient.trim() || !newPhysio.trim() || !newTime.trim() || !newTreatment.trim()) {
+      showToast('Please fill out all required appointment fields.', 'warning');
       return;
     }
 
-    const newApt: Appointment = {
-      id: `apt_${Date.now()}`,
-      patientName: newPatient,
-      physioName: newPhysio,
-      time: newTime,
-      treatment: newTreatment,
-      status: 'scheduled',
-    };
-
-    setAppointments((prev) => [newApt, ...prev]);
-    showToast(`Appointment scheduled for ${newPatient} successfully!`, 'success');
-    
-    // Clear inputs and close modal
-    setNewPatient('');
-    setNewPhysio('');
-    setNewTime('');
-    setNewTreatment('');
-    setIsModalOpen(false);
+    try {
+      await appointmentService.create({
+        patientName: newPatient,
+        therapistName: newPhysio,
+        time: newTime,
+        type: newTreatment,
+        date: new Date().toISOString().split('T')[0],
+        status: 'Scheduled',
+      });
+      showToast(`Appointment scheduled for ${newPatient} successfully!`, 'success');
+      setNewPatient('');
+      setNewPhysio('');
+      setNewTime('');
+      setNewTreatment('');
+      setIsModalOpen(false);
+      loadDashboardData();
+    } catch {
+      showToast('Failed to schedule appointment.', 'error');
+    }
   };
 
   // Simulate API error handling
@@ -133,9 +131,19 @@ export const DashboardPage: React.FC = () => {
         <span style={{ fontWeight: 600, color: 'var(--slate-900)' }}>{item.patientName}</span>
       ),
     },
-    { key: 'physioName', title: 'Physiotherapist' },
+    {
+      key: 'therapistName',
+      title: 'Physiotherapist',
+      render: (item) => (
+        <span>{item.therapistName || 'Dr. Glory Physiotherapist'}</span>
+      ),
+    },
     { key: 'time', title: 'Scheduled Time', width: '130px' },
-    { key: 'treatment', title: 'Treatment Protocol' },
+    {
+      key: 'type',
+      title: 'Treatment Protocol',
+      render: (item) => <span>{item.type || 'Physiotherapy Session'}</span>,
+    },
     {
       key: 'status',
       title: 'Status',
@@ -154,9 +162,9 @@ export const DashboardPage: React.FC = () => {
           <Card.Body className="metric-card-content">
             <div className="metric-card-info">
               <span className="metric-card-label">Patients Active</span>
-              <span className="metric-card-value">128</span>
+              <span className="metric-card-value">{activePatientCount}</span>
               <span className="metric-card-trend metric-card-trend-up">
-                ▲ +8% this week
+                ▲ Registered Patients
               </span>
             </div>
             <div className="metric-card-icon-container">
@@ -171,7 +179,7 @@ export const DashboardPage: React.FC = () => {
               <span className="metric-card-label">Today's Visits</span>
               <span className="metric-card-value">{appointments.length}</span>
               <span className="metric-card-trend metric-card-trend-up">
-                ▲ 4 completed
+                ▲ {completedTodayCount} completed
               </span>
             </div>
             <div className="metric-card-icon-container">
@@ -183,10 +191,10 @@ export const DashboardPage: React.FC = () => {
         <Card hoverable>
           <Card.Body className="metric-card-content">
             <div className="metric-card-info">
-              <span className="metric-card-label">Sessions Active</span>
-              <span className="metric-card-value">8</span>
-              <span className="metric-card-trend metric-card-trend-down">
-                ▼ -2 from yesterday
+              <span className="metric-card-label">Sessions Scheduled</span>
+              <span className="metric-card-value">{activeSessionsCount}</span>
+              <span className="metric-card-trend metric-card-trend-up">
+                ▲ Active Today
               </span>
             </div>
             <div className="metric-card-icon-container">
@@ -198,10 +206,10 @@ export const DashboardPage: React.FC = () => {
         <Card hoverable>
           <Card.Body className="metric-card-content">
             <div className="metric-card-info">
-              <span className="metric-card-label">Billing Pending</span>
-              <span className="metric-card-value">$2,450</span>
+              <span className="metric-card-label">Estimated Today Fee</span>
+              <span className="metric-card-value">${totalPendingFee}</span>
               <span className="metric-card-trend metric-card-trend-up">
-                ▲ +$350 today
+                ▲ Today's Visits Fee
               </span>
             </div>
             <div className="metric-card-icon-container">
@@ -309,7 +317,7 @@ export const DashboardPage: React.FC = () => {
         <form onSubmit={handleCreateAppointment}>
           <Input
             label="Patient Name"
-            placeholder="e.g. Robert Downey Jr."
+            placeholder="Enter patient full name"
             value={newPatient}
             onChange={(e) => setNewPatient(e.target.value)}
             required
@@ -317,7 +325,7 @@ export const DashboardPage: React.FC = () => {
 
           <Input
             label="Physiotherapist"
-            placeholder="e.g. Dr. Glory Florence"
+            placeholder="Select or enter physiotherapist name"
             value={newPhysio}
             onChange={(e) => setNewPhysio(e.target.value)}
             required
@@ -326,14 +334,14 @@ export const DashboardPage: React.FC = () => {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
             <Input
               label="Session Time"
-              placeholder="e.g. 03:30 PM"
+              placeholder="e.g. 10:00 AM"
               value={newTime}
               onChange={(e) => setNewTime(e.target.value)}
               required
             />
             <Input
               label="Treatment Protocol"
-              placeholder="e.g. Electrotherapy"
+              placeholder="e.g. Physical Therapy"
               value={newTreatment}
               onChange={(e) => setNewTreatment(e.target.value)}
               required

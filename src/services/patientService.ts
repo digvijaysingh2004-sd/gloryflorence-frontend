@@ -1,5 +1,5 @@
 import api from './api';
-import type { Patient, ClinicalAssessment, TreatmentPlan, TreatmentSession, ExercisePrescription } from '../types';
+import type { Patient, ClinicalAssessment, TreatmentPlan, TreatmentSession, ExercisePrescription, PatientDocument } from '../types';
 
 const STORAGE_KEY = 'gf_patients_db';
 
@@ -486,25 +486,21 @@ export const mapBackendPatient = (dto: any): Patient => {
 export const patientService = {
   getAll: async (filters?: { search?: string; status?: string; gender?: string }): Promise<Patient[]> => {
     try {
-      const token = localStorage.getItem('gf_auth_token');
-      if (token && !token.startsWith('mock_')) {
-        const response = await api.get('/patients', { params: filters });
-        const rawList = Array.isArray(response.data) ? response.data : (response.data?.items || []);
-        let mapped: Patient[] = rawList.map(mapBackendPatient);
-        if (filters?.search) {
-          const lower = filters.search.toLowerCase();
-          mapped = mapped.filter(p =>
-            p.name.toLowerCase().includes(lower) ||
-            p.email.toLowerCase().includes(lower) ||
-            p.phone.includes(lower)
-          );
-        }
-        if (filters?.gender && filters.gender !== 'All') {
-          mapped = mapped.filter(p => p.gender.toLowerCase() === filters.gender?.toLowerCase());
-        }
-        return mapped;
+      const response = await api.get('/patients', { params: filters });
+      const rawList = Array.isArray(response.data) ? response.data : (response.data?.items || []);
+      let mapped: Patient[] = rawList.map(mapBackendPatient);
+      if (filters?.search) {
+        const lower = filters.search.toLowerCase();
+        mapped = mapped.filter(p =>
+          p.name.toLowerCase().includes(lower) ||
+          p.email.toLowerCase().includes(lower) ||
+          p.phone.includes(lower)
+        );
       }
-      throw new Error('Offline mode active');
+      if (filters?.gender && filters.gender !== 'All') {
+        mapped = mapped.filter(p => p.gender.toLowerCase() === filters.gender?.toLowerCase());
+      }
+      return mapped;
     } catch {
       console.warn('[Offline Mode] Loading patients from localStorage.');
       let list = getLocalStore();
@@ -532,12 +528,8 @@ export const patientService = {
 
   getById: async (id: string): Promise<Patient> => {
     try {
-      const token = localStorage.getItem('gf_auth_token');
-      if (token && !token.startsWith('mock_')) {
-        const response = await api.get(`/patients/${id}`);
-        return mapBackendPatient(response.data);
-      }
-      throw new Error('Offline mode active');
+      const response = await api.get(`/patients/${id}`);
+      return mapBackendPatient(response.data);
     } catch {
       console.warn(`[Offline Mode] Fetching patient ${id} from localStorage.`);
       const list = getLocalStore();
@@ -549,25 +541,21 @@ export const patientService = {
 
   create: async (patientData: Omit<Patient, 'id' | 'registrationDate'>): Promise<Patient> => {
     try {
-      const token = localStorage.getItem('gf_auth_token');
-      if (token && !token.startsWith('mock_')) {
-        const nameParts = (patientData.name || '').trim().split(' ');
-        const firstName = nameParts[0] || 'Patient';
-        const lastName = nameParts.slice(1).join(' ') || 'User';
-        const payload = {
-          firstName,
-          lastName,
-          dateOfBirth: patientData.dateOfBirth ? new Date(patientData.dateOfBirth).toISOString() : new Date('1990-01-01').toISOString(),
-          gender: patientData.gender || 'Male',
-          email: patientData.email || '',
-          phoneNumber: patientData.phone || '',
-          address: patientData.address || '',
-          medicalHistory: patientData.medicalHistory?.map(m => m.condition).join('; ') || '',
-        };
-        const response = await api.post('/patients', payload);
-        return mapBackendPatient(response.data);
-      }
-      throw new Error('Offline mode active');
+      const nameParts = (patientData.name || '').trim().split(' ');
+      const firstName = nameParts[0] || 'Patient';
+      const lastName = nameParts.slice(1).join(' ') || 'User';
+      const payload = {
+        firstName,
+        lastName,
+        dateOfBirth: patientData.dateOfBirth ? new Date(patientData.dateOfBirth).toISOString() : new Date('1990-01-01').toISOString(),
+        gender: patientData.gender || 'Male',
+        email: patientData.email || '',
+        phoneNumber: patientData.phone || '',
+        address: patientData.address || '',
+        medicalHistory: patientData.medicalHistory?.map(m => m.condition).join('; ') || '',
+      };
+      const response = await api.post('/patients', payload);
+      return mapBackendPatient(response.data);
     } catch {
       console.warn('[Offline Mode] Creating patient in localStorage.');
       const list = getLocalStore();
@@ -596,25 +584,21 @@ export const patientService = {
 
   update: async (id: string, patientData: Partial<Patient>): Promise<Patient> => {
     try {
-      const token = localStorage.getItem('gf_auth_token');
-      if (token && !token.startsWith('mock_')) {
-        const nameParts = (patientData.name || '').trim().split(' ');
-        const firstName = nameParts[0] || 'Patient';
-        const lastName = nameParts.slice(1).join(' ') || 'User';
-        const payload = {
-          firstName,
-          lastName,
-          dateOfBirth: patientData.dateOfBirth ? new Date(patientData.dateOfBirth).toISOString() : undefined,
-          gender: patientData.gender,
-          email: patientData.email,
-          phoneNumber: patientData.phone,
-          address: patientData.address,
-          medicalHistory: patientData.medicalHistory?.map(m => m.condition).join('; '),
-        };
-        const response = await api.put(`/patients/${id}`, payload);
-        return mapBackendPatient(response.data);
-      }
-      throw new Error('Offline mode active');
+      const nameParts = (patientData.name || '').trim().split(' ');
+      const firstName = nameParts[0] || 'Patient';
+      const lastName = nameParts.slice(1).join(' ') || 'User';
+      const payload = {
+        firstName,
+        lastName,
+        dateOfBirth: patientData.dateOfBirth ? new Date(patientData.dateOfBirth).toISOString() : undefined,
+        gender: patientData.gender,
+        email: patientData.email,
+        phoneNumber: patientData.phone,
+        address: patientData.address,
+        medicalHistory: patientData.medicalHistory?.map(m => m.condition).join('; '),
+      };
+      const response = await api.put(`/patients/${id}`, payload);
+      return mapBackendPatient(response.data);
     } catch {
       console.warn(`[Offline Mode] Updating patient ${id} in localStorage.`);
       const list = getLocalStore();
@@ -638,12 +622,8 @@ export const patientService = {
 
   delete: async (id: string): Promise<boolean> => {
     try {
-      const token = localStorage.getItem('gf_auth_token');
-      if (token && !token.startsWith('mock_')) {
-        await api.delete(`/patients/${id}`);
-        return true;
-      }
-      throw new Error('Offline mode active');
+      await api.delete(`/patients/${id}`);
+      return true;
     } catch {
       console.warn(`[Offline Mode] Archiving/Deleting patient ${id} in localStorage.`);
       const list = getLocalStore();
@@ -653,16 +633,124 @@ export const patientService = {
     }
   },
 
-  // --- Day 5 Clinical Assessments & Treatment Plans Methods ---
+  // --- Section 2 Medical History & Document Methods ---
+
+  getMedicalHistory: async (patientId: string) => {
+    try {
+      const response = await api.get(`/patients/${patientId}/medical-history`);
+      return Array.isArray(response.data) ? response.data : response.data?.items || [];
+    } catch {
+      console.warn(`[Offline Mode] Fetching medical history for patient ${patientId}`);
+      const list = getLocalStore();
+      const patient = list.find(p => p.id === patientId);
+      return patient?.medicalHistory || [];
+    }
+  },
+
+  addMedicalHistoryRecord: async (patientId: string, historyData: { diagnosis: string; symptoms?: string; treatmentReceived?: string; recordDate?: string; remarks?: string }) => {
+    try {
+      const response = await api.post(`/patients/${patientId}/medical-history`, historyData);
+      return response.data;
+    } catch {
+      console.warn(`[Offline Mode] Adding medical history record for patient ${patientId}`);
+      const list = getLocalStore();
+      const patient = list.find(p => p.id === patientId);
+      if (!patient) throw new Error('Patient not found');
+
+      const newItem = {
+        id: `mh_${Date.now()}`,
+        condition: historyData.diagnosis,
+        diagnosedDate: historyData.recordDate ? historyData.recordDate.split('T')[0] : new Date().toISOString().split('T')[0],
+        severity: 'Moderate' as const,
+        status: 'Active' as const,
+        notes: historyData.remarks || historyData.symptoms || '',
+      };
+      if (!patient.medicalHistory) patient.medicalHistory = [];
+      patient.medicalHistory.unshift(newItem);
+      saveLocalStore(list);
+      return newItem;
+    }
+  },
+
+  deleteMedicalHistoryRecord: async (historyId: string): Promise<boolean> => {
+    try {
+      await api.delete(`/patients/medical-history/${historyId}`);
+      return true;
+    } catch {
+      console.warn(`[Offline Mode] Deleting medical history ${historyId}`);
+      return true;
+    }
+  },
+
+  getDocuments: async (patientId: string) => {
+    try {
+      const response = await api.get(`/patients/${patientId}/documents`);
+      return Array.isArray(response.data) ? response.data : response.data?.items || [];
+    } catch {
+      console.warn(`[Offline Mode] Fetching documents for patient ${patientId}`);
+      const list = getLocalStore();
+      const patient = list.find(p => p.id === patientId);
+      return patient?.documents || [];
+    }
+  },
+
+  uploadDocument: async (patientId: string, file: File, documentType: string) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('documentType', documentType);
+      const response = await api.post(`/patients/${patientId}/documents/upload`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return response.data;
+    } catch {
+      console.warn(`[Offline Mode] Uploading document for patient ${patientId}`);
+      const list = getLocalStore();
+      const patient = list.find(p => p.id === patientId);
+      if (!patient) throw new Error('Patient not found');
+
+      const newDoc: PatientDocument = {
+        id: `doc_${Date.now()}`,
+        fileName: file.name,
+        fileType: file.type.includes('pdf') ? 'pdf' : 'image',
+        fileSize: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
+        uploadDate: new Date().toISOString().split('T')[0],
+        uploadedBy: 'Clinical User',
+        url: '#',
+      };
+
+      if (!patient.documents) patient.documents = [];
+      patient.documents.unshift(newDoc);
+      saveLocalStore(list);
+      return newDoc;
+    }
+  },
+
+  deleteDocument: async (documentId: string): Promise<boolean> => {
+    try {
+      await api.delete(`/patients/documents/${documentId}`);
+      return true;
+    } catch {
+      console.warn(`[Offline Mode] Deleting document ${documentId}`);
+      return true;
+    }
+  },
+
+  // --- Section 5 Clinical Assessments Methods ---
 
   addAssessment: async (patientId: string, assessmentData: Omit<ClinicalAssessment, 'id'>): Promise<ClinicalAssessment> => {
     try {
-      const token = localStorage.getItem('gf_auth_token');
-      if (token && !token.startsWith('mock_')) {
-        const res = await api.post(`/patients/${patientId}/assessments`, assessmentData);
-        return res.data;
-      }
-      throw new Error('Offline mode');
+      const res = await api.post(`/patients/${patientId}/assessments`, {
+        patientId: parseInt(patientId, 10) || patientId,
+        physiotherapistId: 3,
+        chiefComplaint: assessmentData.chiefComplaint,
+        currentCondition: assessmentData.romFindings || assessmentData.postureAndGait || '',
+        painLevel: assessmentData.painScore,
+        diagnosis: assessmentData.clinicalDiagnosis,
+        clinicalNotes: assessmentData.notes,
+        recommendations: assessmentData.shortTermGoals || assessmentData.longTermGoals || '',
+      });
+      return res.data;
     } catch {
       console.warn(`[Offline Mode] Adding clinical assessment for patient ${patientId}`);
       const list = getLocalStore();
@@ -683,12 +771,8 @@ export const patientService = {
 
   deleteAssessment: async (patientId: string, assessmentId: string): Promise<boolean> => {
     try {
-      const token = localStorage.getItem('gf_auth_token');
-      if (token && !token.startsWith('mock_')) {
-        await api.delete(`/patients/${patientId}/assessments/${assessmentId}`);
-        return true;
-      }
-      throw new Error('Offline mode');
+      await api.delete(`/assessments/${assessmentId}`);
+      return true;
     } catch {
       console.warn(`[Offline Mode] Deleting assessment ${assessmentId} from patient ${patientId}`);
       const list = getLocalStore();
@@ -701,14 +785,29 @@ export const patientService = {
     }
   },
 
+  // --- Section 6 Treatment Plans Methods ---
+
   createTreatmentPlan: async (patientId: string, planData: Omit<TreatmentPlan, 'id' | 'sessionsCompleted' | 'sessions'>): Promise<TreatmentPlan> => {
     try {
-      const token = localStorage.getItem('gf_auth_token');
-      if (token && !token.startsWith('mock_')) {
-        const res = await api.post(`/patients/${patientId}/treatment-plans`, planData);
-        return res.data;
-      }
-      throw new Error('Offline mode');
+      const res = await api.post(`/patients/${patientId}/treatment-plans`, {
+        patientId: parseInt(patientId, 10) || patientId,
+        physiotherapistId: 3,
+        assessmentId: 1,
+        startDate: planData.startDate,
+        expectedEndDate: planData.endDate,
+        numberOfSessions: planData.sessionsCount,
+        goal: planData.goals,
+        notes: planData.notes,
+        status: planData.status || 'Active',
+        details: (planData.treatments || []).map((t, idx) => ({
+          treatmentTypeId: idx + 1,
+          frequency: planData.treatmentFrequency || '3 times per week',
+          durationMinutes: 45,
+          instructions: t,
+          numberOfSessions: planData.sessionsCount,
+        })),
+      });
+      return res.data;
     } catch {
       console.warn(`[Offline Mode] Creating treatment plan for patient ${patientId}`);
       const list = getLocalStore();
@@ -731,12 +830,8 @@ export const patientService = {
 
   updatePlanStatus: async (patientId: string, planId: string, status: TreatmentPlan['status']): Promise<TreatmentPlan> => {
     try {
-      const token = localStorage.getItem('gf_auth_token');
-      if (token && !token.startsWith('mock_')) {
-        const res = await api.patch(`/patients/${patientId}/treatment-plans/${planId}/status`, { status });
-        return res.data;
-      }
-      throw new Error('Offline mode');
+      const res = await api.patch(`/treatment-plans/${planId}/status`, { status });
+      return res.data;
     } catch {
       console.warn(`[Offline Mode] Updating treatment plan ${planId} status to ${status}`);
       const list = getLocalStore();
@@ -752,14 +847,26 @@ export const patientService = {
     }
   },
 
+  // --- Section 7 Treatment Sessions Methods ---
+
   recordTreatmentSession: async (patientId: string, planId: string, sessionData: Omit<TreatmentSession, 'id'>): Promise<TreatmentSession> => {
     try {
-      const token = localStorage.getItem('gf_auth_token');
-      if (token && !token.startsWith('mock_')) {
-        const res = await api.post(`/patients/${patientId}/treatment-plans/${planId}/sessions`, sessionData);
-        return res.data;
-      }
-      throw new Error('Offline mode');
+      const res = await api.post('/treatment-sessions', {
+        appointmentId: 1,
+        patientId: parseInt(patientId, 10) || patientId,
+        physiotherapistId: 3,
+        treatmentPlanId: parseInt(planId, 10) || planId,
+        sessionDate: sessionData.date,
+        startTime: '10:00:00',
+        endTime: '10:45:00',
+        painLevelBefore: sessionData.preSessionPain,
+        painLevelAfter: sessionData.postSessionPain,
+        status: 'Completed',
+        treatmentPerformed: sessionData.modalitiesConducted?.join(', ') || '',
+        notes: sessionData.notes,
+        recommendations: sessionData.nextSessionPlan || '',
+      });
+      return res.data;
     } catch {
       console.warn(`[Offline Mode] Recording session on plan ${planId} for patient ${patientId}`);
       const list = getLocalStore();
@@ -787,14 +894,37 @@ export const patientService = {
     }
   },
 
+  completeTreatmentSession: async (sessionId: string, data: { painLevelAfter?: number; treatmentPerformed?: string; recommendations?: string; notes?: string }) => {
+    try {
+      const res = await api.post(`/treatment-sessions/${sessionId}/complete`, data);
+      return res.data;
+    } catch {
+      console.warn(`[Offline Mode] Completing session ${sessionId}`);
+      return { id: sessionId, status: 'Completed', ...data };
+    }
+  },
+
+  // --- Section 10 Exercise Prescriptions Methods ---
+
   createPrescription: async (patientId: string, prescriptionData: Omit<ExercisePrescription, 'id'>): Promise<ExercisePrescription> => {
     try {
-      const token = localStorage.getItem('gf_auth_token');
-      if (token && !token.startsWith('mock_')) {
-        const res = await api.post(`/patients/${patientId}/prescriptions`, prescriptionData);
-        return res.data;
-      }
-      throw new Error('Offline mode');
+      const res = await api.post('/exercise-prescriptions', {
+        patientId: parseInt(patientId, 10) || patientId,
+        physiotherapistId: 3,
+        treatmentPlanId: 1,
+        instructions: prescriptionData.generalInstructions || prescriptionData.targetGoal,
+        status: 'Active',
+        prescriptionDetails: (prescriptionData.items || []).map(i => ({
+          exerciseId: parseInt(i.exerciseId, 10) || 1,
+          sets: i.sets,
+          repetitions: i.reps || 10,
+          holdSeconds: i.holdSec || 0,
+          frequencyPerDay: 2,
+          durationWeeks: i.durationWeeks || 4,
+          instructions: i.notes || '',
+        })),
+      });
+      return res.data;
     } catch {
       console.warn(`[Offline Mode] Creating exercise prescription for patient ${patientId}`);
       const list = getLocalStore();
@@ -815,12 +945,8 @@ export const patientService = {
 
   updatePrescriptionStatus: async (patientId: string, prescriptionId: string, status: ExercisePrescription['status']): Promise<ExercisePrescription> => {
     try {
-      const token = localStorage.getItem('gf_auth_token');
-      if (token && !token.startsWith('mock_')) {
-        const res = await api.patch(`/patients/${patientId}/prescriptions/${prescriptionId}/status`, { status });
-        return res.data;
-      }
-      throw new Error('Offline mode');
+      const res = await api.patch(`/exercise-prescriptions/${prescriptionId}/status`, { status });
+      return res.data;
     } catch {
       console.warn(`[Offline Mode] Updating prescription ${prescriptionId} status to ${status}`);
       const list = getLocalStore();
@@ -838,12 +964,8 @@ export const patientService = {
 
   deletePrescription: async (patientId: string, prescriptionId: string): Promise<boolean> => {
     try {
-      const token = localStorage.getItem('gf_auth_token');
-      if (token && !token.startsWith('mock_')) {
-        await api.delete(`/patients/${patientId}/prescriptions/${prescriptionId}`);
-        return true;
-      }
-      throw new Error('Offline mode');
+      await api.delete(`/exercise-prescriptions/${prescriptionId}`);
+      return true;
     } catch {
       console.warn(`[Offline Mode] Deleting prescription ${prescriptionId} from patient ${patientId}`);
       const list = getLocalStore();
@@ -856,3 +978,4 @@ export const patientService = {
     }
   }
 };
+
