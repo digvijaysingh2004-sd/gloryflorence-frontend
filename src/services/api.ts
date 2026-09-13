@@ -75,12 +75,18 @@ api.interceptors.response.use(
       window.dispatchEvent(new Event('gf-auth-logout'));
     }
 
-    // Dispatch custom error event to trigger visual Toast notification
-    window.dispatchEvent(
-      new CustomEvent('gf-toast-error', {
-        detail: { message: errorMessage, status },
-      })
-    );
+    const suppressToast =
+      (error.config as any)?.suppressToast ||
+      ((error.config as any)?.suppress404Toast && status === 404);
+
+    // Dispatch custom error event to trigger visual Toast notification if not suppressed
+    if (!suppressToast) {
+      window.dispatchEvent(
+        new CustomEvent('gf-toast-error', {
+          detail: { message: errorMessage, status },
+        })
+      );
+    }
 
     return Promise.reject(error);
   }

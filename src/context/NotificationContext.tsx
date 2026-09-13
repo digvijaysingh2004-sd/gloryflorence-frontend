@@ -8,7 +8,7 @@ interface NotificationContextProps {
   removeToast: (id: string) => void;
 }
 
-const NotificationContext = createContext<NotificationContextProps | undefined>(undefined);
+export const NotificationContext = createContext<NotificationContextProps | undefined>(undefined);
 
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);

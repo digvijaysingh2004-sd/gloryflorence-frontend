@@ -18,7 +18,7 @@ import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Input } from '../components/common/Input';
 import { Modal } from '../components/common/Modal';
-import { useNotification } from '../context/NotificationContext';
+import { useNotification } from '../hooks';
 import { masterDataService } from '../services/masterDataService';
 import {
   treatmentService,
@@ -167,9 +167,9 @@ export const TreatmentsPage: React.FC = () => {
       return;
     }
 
-    const payload = {
+    const payload: Omit<TreatmentType, 'id'> = {
       name: treatmentFormData.name,
-      category: treatmentFormData.category,
+      category: (treatmentFormData.category || 'Manual Therapy') as TreatmentType['category'],
       description: treatmentFormData.description,
       durationMinutes: Number(treatmentFormData.durationMinutes),
       defaultPrice: Number(treatmentFormData.defaultPrice),

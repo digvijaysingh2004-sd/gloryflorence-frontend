@@ -6,7 +6,7 @@ import { Button } from '../components/common/Button';
 import { Card } from '../components/common/Card';
 import { Input } from '../components/common/Input';
 import { Modal } from '../components/common/Modal';
-import { useNotification } from '../context/NotificationContext';
+import { useNotification } from '../hooks';
 import { patientService } from '../services/patientService';
 import { masterDataService } from '../services/masterDataService';
 import type { Patient, GenderDto, BloodGroupDto, CountryDto, StateDto, CityDto } from '../types';
@@ -38,20 +38,34 @@ export const PatientsPage: React.FC = () => {
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
 
   // Form State
-  const initialFormState = {
+  const initialFormState: {
+    name: string;
+    email: string;
+    phone: string;
+    gender: 'Male' | 'Female' | 'Other';
+    dateOfBirth: string;
+    bloodGroup: string;
+    address: string;
+    city: string;
+    state: string;
+    country: string;
+    emergencyContactName: string;
+    emergencyContactPhone: string;
+    status: 'Active' | 'Inactive';
+  } = {
     name: '',
     email: '',
     phone: '',
-    gender: 'Male',
+    gender: '' as any,
     dateOfBirth: '',
-    bloodGroup: 'O+',
+    bloodGroup: '',
     address: '',
     city: '',
     state: '',
     country: '',
     emergencyContactName: '',
     emergencyContactPhone: '',
-    status: 'Active' as 'Active' | 'Inactive',
+    status: 'Active',
   };
   const [formData, setFormData] = useState(initialFormState);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
@@ -131,7 +145,7 @@ export const PatientsPage: React.FC = () => {
   const openAddModal = () => {
     setFormData({
       ...initialFormState,
-      gender: genders.length > 0 ? genders[0].name : 'Male',
+      gender: (genders.length > 0 ? genders[0].name : 'Male') as Patient['gender'],
       bloodGroup: bloodGroups.length > 0 ? bloodGroups[0].name : 'O+',
       country: countries.length > 0 ? countries[0].name : '',
       state: states.length > 0 ? states[0].name : '',
@@ -261,8 +275,7 @@ export const PatientsPage: React.FC = () => {
       title: 'Location',
       render: (patient) => (
         <span>
-          {patient.city}
-          {patient.state ? `, ${patient.state}` : ''}
+          {[patient.city, patient.state, patient.country].filter(Boolean).join(', ') || patient.address || 'N/A'}
         </span>
       ),
     },
@@ -416,19 +429,12 @@ export const PatientsPage: React.FC = () => {
                 onChange={handleInputChange}
                 className="input-field"
               >
-                {genders.length > 0 ? (
-                  genders.map((g) => (
-                    <option key={g.id} value={g.name}>
-                      {g.name}
-                    </option>
-                  ))
-                ) : (
-                  <>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                  </>
-                )}
+                <option value="">Select gender</option>
+                {genders.map((g) => (
+                  <option key={g.id} value={g.name}>
+                    {g.name}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -450,24 +456,12 @@ export const PatientsPage: React.FC = () => {
                 onChange={handleInputChange}
                 className="input-field"
               >
-                {bloodGroups.length > 0 ? (
-                  bloodGroups.map((bg) => (
-                    <option key={bg.id} value={bg.name}>
-                      {bg.name}
-                    </option>
-                  ))
-                ) : (
-                  <>
-                    <option value="O+">O+</option>
-                    <option value="O-">O-</option>
-                    <option value="A+">A+</option>
-                    <option value="A-">A-</option>
-                    <option value="B+">B+</option>
-                    <option value="B-">B-</option>
-                    <option value="AB+">AB+</option>
-                    <option value="AB-">AB-</option>
-                  </>
-                )}
+                <option value="">Select blood group</option>
+                {bloodGroups.map((bg) => (
+                  <option key={bg.id} value={bg.name}>
+                    {bg.name}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -636,19 +630,12 @@ export const PatientsPage: React.FC = () => {
                 onChange={handleInputChange}
                 className="input-field"
               >
-                {genders.length > 0 ? (
-                  genders.map((g) => (
-                    <option key={g.id} value={g.name}>
-                      {g.name}
-                    </option>
-                  ))
-                ) : (
-                  <>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                  </>
-                )}
+                <option value="">Select gender</option>
+                {genders.map((g) => (
+                  <option key={g.id} value={g.name}>
+                    {g.name}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -685,24 +672,12 @@ export const PatientsPage: React.FC = () => {
                 onChange={handleInputChange}
                 className="input-field"
               >
-                {bloodGroups.length > 0 ? (
-                  bloodGroups.map((bg) => (
-                    <option key={bg.id} value={bg.name}>
-                      {bg.name}
-                    </option>
-                  ))
-                ) : (
-                  <>
-                    <option value="O+">O+</option>
-                    <option value="O-">O-</option>
-                    <option value="A+">A+</option>
-                    <option value="A-">A-</option>
-                    <option value="B+">B+</option>
-                    <option value="B-">B-</option>
-                    <option value="AB+">AB+</option>
-                    <option value="AB-">AB-</option>
-                  </>
-                )}
+                <option value="">Select blood group</option>
+                {bloodGroups.map((bg) => (
+                  <option key={bg.id} value={bg.name}>
+                    {bg.name}
+                  </option>
+                ))}
               </select>
             </div>
           </div>

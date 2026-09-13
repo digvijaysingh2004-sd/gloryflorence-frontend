@@ -16,8 +16,7 @@ import {
   Sun,
   Moon,
 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
+import { useAuth, useTheme } from '../hooks';
 import './AppLayout.css';
 
 export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -34,7 +33,7 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
     { label: 'Patients', path: '/patients', icon: <Users size={20} />, roles: ['admin', 'superadmin', 'physiotherapist', 'doctor', 'receptionist'] },
     { label: 'Appointments', path: '/appointments', icon: <Calendar size={20} />, roles: ['admin', 'superadmin', 'physiotherapist', 'doctor', 'receptionist', 'patient'] },
     { label: 'Treatments', path: '/treatments', icon: <Layers size={20} />, roles: ['admin', 'superadmin', 'physiotherapist', 'doctor'] },
-    { label: 'Billing', path: '/billing', icon: <CreditCard size={20} />, roles: ['admin', 'superadmin', 'accountant'] },
+    { label: 'Billing', path: '/billing', icon: <CreditCard size={20} />, roles: ['admin', 'superadmin', 'accountant', 'receptionist'] },
     { label: 'Settings', path: '/settings', icon: <Settings size={20} />, roles: ['admin', 'superadmin', 'physiotherapist', 'doctor', 'receptionist', 'accountant', 'patient'] },
   ];
 
