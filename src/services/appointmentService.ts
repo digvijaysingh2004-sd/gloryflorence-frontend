@@ -233,6 +233,33 @@ export const appointmentService = {
     }
   },
 
+  // 3.1.1 Get Logged-In Patient's Own Appointments: GET /api/appointments/my-appointments
+  getMyAppointments: async (filters?: {
+    status?: string;
+    pageNumber?: number;
+    pageSize?: number;
+  }): Promise<Appointment[]> => {
+    try {
+      const response = await api.get("/appointments/my-appointments", {
+        params: filters,
+      });
+      const rawList = Array.isArray(response.data)
+        ? response.data
+        : response.data?.items || [];
+      const mapped: Appointment[] = rawList.map(mapBackendAppointment);
+
+      mapped.sort((a, b) => {
+        if (a.date !== b.date) return b.date.localeCompare(a.date);
+        return timeToMinutes(a.time) - timeToMinutes(b.time);
+      });
+
+      return mapped;
+    } catch (err) {
+      console.error("Error fetching patient appointments from API:", err);
+      return [];
+    }
+  },
+
   // 3.3 Get Appointment by ID: GET /api/appointments/{id}
   getById: async (id: string): Promise<Appointment> => {
     const response = await api.get(`/appointments/${id}`);
@@ -241,7 +268,7 @@ export const appointmentService = {
 
   // 3.2 Create Appointment: POST /api/appointments
   create: async (appointmentData: {
-    patientId: string;
+    patientId: string | number;
     therapistId?: string;
     appointmentTypeId?: number;
     date: string;
@@ -256,8 +283,15 @@ export const appointmentService = {
     const end24 = minutesToTimeStr(startMins + duration);
     const endTime24 = timeTo24h(end24);
 
+    const parsedPatId =
+      appointmentData.patientId !== undefined &&
+      appointmentData.patientId !== null &&
+      String(appointmentData.patientId).trim() !== ""
+        ? parseInt(String(appointmentData.patientId), 10)
+        : 0;
+
     const payload = {
-      patientId: parseInt(appointmentData.patientId, 10) || 1,
+      patientId: Number.isNaN(parsedPatId) ? 0 : parsedPatId,
       physiotherapistId: parseInt(appointmentData.therapistId || "1", 10) || 1,
       appointmentTypeId: appointmentData.appointmentTypeId || 1, // Dynamic ID passed from selection
       appointmentDate: appointmentData.date
@@ -367,8 +401,16 @@ export const appointmentService = {
   // --- Section 4 Appointment Types CRUD Methods ---
 
   getAppointmentTypeById: async (id: number) => {
-    const response = await api.get(`/appointment-types/${id}`);
-    return response.data;
+    try {
+      const response = await api.get(`/appointment-types/${id}`);
+      return response.data;
+    } catch (err: any) {
+      if (err.response?.status === 404) {
+        const response = await api.get(`/MasterData/appointment-types/${id}`);
+        return response.data;
+      }
+      throw err;
+    }
   },
 
   createAppointmentType: async (data: {
@@ -377,8 +419,16 @@ export const appointmentService = {
     description?: string;
     isActive?: boolean;
   }) => {
-    const response = await api.post("/appointment-types", data);
-    return response.data;
+    try {
+      const response = await api.post("/appointment-types", data);
+      return response.data;
+    } catch (err: any) {
+      if (err.response?.status === 404) {
+        const response = await api.post("/MasterData/appointment-types", data);
+        return response.data;
+      }
+      throw err;
+    }
   },
 
   updateAppointmentType: async (
@@ -386,17 +436,33 @@ export const appointmentService = {
     data: {
       name: string;
       durationMinutes: number;
-      description: string;
+      description?: string;
       isActive: boolean;
     },
   ) => {
-    await api.put(`/appointment-types/${id}`, { id, ...data });
-    return true;
+    try {
+      await api.put(`/appointment-types/${id}`, { id, ...data });
+      return true;
+    } catch (err: any) {
+      if (err.response?.status === 404) {
+        await api.put(`/MasterData/appointment-types/${id}`, { id, ...data });
+        return true;
+      }
+      throw err;
+    }
   },
 
   deleteAppointmentType: async (id: number) => {
-    await api.delete(`/appointment-types/${id}`);
-    return true;
+    try {
+      await api.delete(`/appointment-types/${id}`);
+      return true;
+    } catch (err: any) {
+      if (err.response?.status === 404) {
+        await api.delete(`/MasterData/appointment-types/${id}`);
+        return true;
+      }
+      throw err;
+    }
   },
 };
 

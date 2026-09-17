@@ -46,6 +46,24 @@ export interface LoginResponseDto {
   user: UserDto;
 }
 
+export interface RegisterPatientDto {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  password: string;
+  dateOfBirth?: string;
+  gender?: string;
+  bloodGroup?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  medicalHistory?: string;
+}
+
 // --- Patient Module ---
 
 export interface PatientDto {

@@ -6,11 +6,13 @@ import React, {
   useCallback,
 } from "react";
 import type { AuthState, User } from "../types";
+import type { RegisterPatientDto } from "../types/api.types";
 import { useNotification } from "./NotificationContext";
 import api from "../services/api";
 
 interface AuthContextProps extends AuthState {
   login: (email: string, password: string) => Promise<boolean>;
+  registerPatient: (data: RegisterPatientDto) => Promise<boolean>;
   logout: () => void;
 }
 
@@ -165,8 +167,62 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  const registerPatient = async (
+    data: RegisterPatientDto,
+  ): Promise<boolean> => {
+    setState((prev) => ({ ...prev, loading: true }));
+    try {
+      let response;
+      try {
+        response = await api.post("/auth/register", data);
+      } catch (err: any) {
+        if (err.response?.status === 404) {
+          response = await api.post("/auth/register-patient", data);
+        } else {
+          throw err;
+        }
+      }
+
+      const payload = response.data?.data || response.data;
+      if (payload?.token) {
+        const rawUser = payload.user || payload;
+        const formattedUser: User = {
+          id: String(rawUser.id),
+          email: rawUser.email || data.email,
+          name:
+            rawUser.name ||
+            `${data.firstName || ""} ${data.lastName || ""}`.trim() ||
+            data.email,
+          role: "patient",
+        };
+
+        localStorage.setItem("gf_auth_token", payload.token);
+        localStorage.setItem("gf_auth_user", JSON.stringify(formattedUser));
+
+        setState({
+          user: formattedUser,
+          isAuthenticated: true,
+          loading: false,
+        });
+
+        showToast(`Registration successful! Welcome, ${formattedUser.name}!`, "success");
+        return true;
+      }
+
+      // If token wasn't returned directly in response, try automatic login
+      const autoLogin = await login(data.email, data.password);
+      if (!autoLogin) {
+        showToast("Registration successful! Please sign in with your credentials.", "success");
+      }
+      return true;
+    } catch (error: any) {
+      setState((prev) => ({ ...prev, loading: false }));
+      return false;
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ ...state, login, logout }}>
+    <AuthContext.Provider value={{ ...state, login, registerPatient, logout }}>
       {children}
     </AuthContext.Provider>
   );

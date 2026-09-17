@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Users,
   Calendar,
@@ -14,7 +15,7 @@ import { Table, type Column } from '../components/common/Table';
 import { Button } from '../components/common/Button';
 import { Modal } from '../components/common/Modal';
 import { Input } from '../components/common/Input';
-import { useNotification } from '../hooks';
+import { useNotification, useAuth } from '../hooks';
 import { appointmentService } from '../services/appointmentService';
 import { patientService } from '../services/patientService';
 import type { Appointment } from '../types';
@@ -23,6 +24,9 @@ import './DashboardPage.css';
 
 export const DashboardPage: React.FC = () => {
   const { showToast } = useNotification();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const isPatient = user?.role === 'patient';
   
   // State for loading state demonstration
   const [isTableLoading, setIsTableLoading] = useState(false);
@@ -56,22 +60,30 @@ export const DashboardPage: React.FC = () => {
   const loadDashboardData = React.useCallback(async () => {
     setIsTableLoading(true);
     try {
-      const [allAppts, patientsData] = await Promise.all([
-        appointmentService.getAll({}),
-        patientService.getAll(),
-      ]);
-      const todayStr = new Date().toISOString().split('T')[0];
-      const todaysAppts = allAppts.filter((a) => a.date === todayStr);
+      if (isPatient) {
+        const [myAppts] = await Promise.all([
+          appointmentService.getMyAppointments(),
+        ]);
+        setAppointments(myAppts);
+        setActivePatientCount(1);
+      } else {
+        const [allAppts, patientsData] = await Promise.all([
+          appointmentService.getAll({}),
+          patientService.getAll(),
+        ]);
+        const todayStr = new Date().toISOString().split('T')[0];
+        const todaysAppts = allAppts.filter((a) => a.date === todayStr);
 
-      // If today has appointments, show today's visits. Otherwise, fall back to all appointments.
-      setAppointments(todaysAppts.length > 0 ? todaysAppts : allAppts);
-      setActivePatientCount(patientsData.length);
+        // If today has appointments, show today's visits. Otherwise, fall back to all appointments.
+        setAppointments(todaysAppts.length > 0 ? todaysAppts : allAppts);
+        setActivePatientCount(patientsData.length);
+      }
     } catch {
       showToast('Failed to load dashboard data.', 'error');
     } finally {
       setIsTableLoading(false);
     }
-  }, [showToast]);
+  }, [isPatient, showToast]);
 
   React.useEffect(() => {
     loadDashboardData();
@@ -155,6 +167,149 @@ export const DashboardPage: React.FC = () => {
       ),
     },
   ];
+
+  if (isPatient) {
+    const nextAppt = appointments.find((a) => a.status === 'Scheduled');
+    const completedCount = appointments.filter((a) => a.status === 'Completed').length;
+
+    const patientTableColumns: Column<Appointment>[] = [
+      {
+        key: 'date',
+        title: 'Date & Time',
+        render: (item) => (
+          <div>
+            <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{item.date}</div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+              {item.time} ({item.durationMinutes || 45} mins)
+            </div>
+          </div>
+        ),
+      },
+      {
+        key: 'therapistName',
+        title: 'Physiotherapist / Doctor',
+        render: (item) => <span>{item.therapistName || 'Assigned Therapist'}</span>,
+      },
+      {
+        key: 'type',
+        title: 'Consultation Type',
+        render: (item) => <span>{item.type || 'Physiotherapy Session'}</span>,
+      },
+      {
+        key: 'status',
+        title: 'Status',
+        width: '130px',
+        render: (item) => <span className={`badge badge-${item.status}`}>{item.status}</span>,
+      },
+    ];
+
+    return (
+      <div className="patient-dashboard-container">
+        {/* Welcome Hero Card */}
+        <Card>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '1rem',
+              padding: '0.5rem 0',
+            }}
+          >
+            <div>
+              <h1 style={{ fontSize: '1.45rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+                Welcome, {user?.name || 'Patient'}!
+              </h1>
+              <p style={{ color: 'var(--text-secondary)', marginTop: '0.35rem', marginBottom: 0, fontSize: '0.9rem' }}>
+                Your personal clinical portal. Book therapy consultations, view appointments, and track your recovery.
+              </p>
+            </div>
+            <Button
+              variant="primary"
+              size="lg"
+              iconLeft={<Plus size={18} />}
+              onClick={() => navigate('/appointments')}
+            >
+              Book New Appointment
+            </Button>
+          </div>
+        </Card>
+
+        {/* Patient Metrics Grid */}
+        <div className="dashboard-grid" style={{ marginTop: '1.25rem' }}>
+          <Card hoverable>
+            <Card.Body className="metric-card-content">
+              <div className="metric-card-info">
+                <span className="metric-card-label">Next Scheduled Visit</span>
+                <span className="metric-card-value" style={{ fontSize: '1.15rem', marginTop: '0.35rem' }}>
+                  {nextAppt ? `${nextAppt.date} @ ${nextAppt.time}` : 'No Upcoming Visit'}
+                </span>
+                <span className="metric-card-trend metric-card-trend-up">
+                  {nextAppt ? (nextAppt.therapistName || 'Clinic') : 'Ready to schedule'}
+                </span>
+              </div>
+              <div className="metric-card-icon-container">
+                <Calendar size={24} />
+              </div>
+            </Card.Body>
+          </Card>
+
+          <Card hoverable>
+            <Card.Body className="metric-card-content">
+              <div className="metric-card-info">
+                <span className="metric-card-label">Sessions Completed</span>
+                <span className="metric-card-value">{completedCount}</span>
+                <span className="metric-card-trend metric-card-trend-up">
+                  Rehabilitation Progress
+                </span>
+              </div>
+              <div className="metric-card-icon-container">
+                <Activity size={24} />
+              </div>
+            </Card.Body>
+          </Card>
+
+          <Card hoverable>
+            <Card.Body className="metric-card-content">
+              <div className="metric-card-info">
+                <span className="metric-card-label">Therapy Care Plan</span>
+                <span className="metric-card-value" style={{ fontSize: '1.25rem', marginTop: '0.25rem', color: '#10b981' }}>
+                  Active
+                </span>
+                <span className="metric-card-trend metric-card-trend-up">
+                  Glory Florence Clinical Team
+                </span>
+              </div>
+              <div className="metric-card-icon-container">
+                <Sparkles size={24} />
+              </div>
+            </Card.Body>
+          </Card>
+        </div>
+
+        {/* Appointments Table */}
+        <div style={{ marginTop: '1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+            <h2 style={{ fontSize: '1.15rem', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
+              My Appointments & Consultations
+            </h2>
+            <Button variant="outline" size="sm" onClick={() => navigate('/appointments')}>
+              View Full Schedule
+            </Button>
+          </div>
+          <Card>
+            <Table
+              columns={patientTableColumns}
+              data={appointments}
+              isLoading={isTableLoading}
+              emptyMessage="You have no appointments booked yet. Click 'Book New Appointment' above to get started."
+            />
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>

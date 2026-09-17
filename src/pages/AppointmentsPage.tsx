@@ -16,13 +16,14 @@ import {
   Stethoscope,
   Edit2,
   Trash2,
+  Sliders,
 } from 'lucide-react';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Input } from '../components/common/Input';
 import { Modal } from '../components/common/Modal';
 import { Table, type Column } from '../components/common/Table';
-import { useNotification } from '../hooks';
+import { useNotification, useAuth } from '../hooks';
 import {
   appointmentService,
   timeToMinutes,
@@ -30,6 +31,7 @@ import {
 } from '../services/appointmentService';
 import { patientService } from '../services/patientService';
 import { settingsService, type ClinicSettings } from '../services/settingsService';
+import { AppointmentTypesTab } from '../components/settings/AppointmentTypesTab';
 import type { Appointment, Patient } from '../types';
 import './AppointmentsPage.css';
 
@@ -57,6 +59,9 @@ const addDays = (dateStr: string, days: number): string => {
 
 export const AppointmentsPage: React.FC = () => {
   const { showToast } = useNotification();
+  const { user } = useAuth();
+  const isPatient = user?.role === 'patient';
+  const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
 
   const [viewMode, setViewMode] = useState<'timeline' | 'table'>('timeline');
   const [selectedDate, setSelectedDate] = useState<string>(getTodayStr);
@@ -72,6 +77,7 @@ export const AppointmentsPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isTypesModalOpen, setIsTypesModalOpen] = useState<boolean>(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
 
   const [formData, setFormData] = useState({
@@ -98,45 +104,75 @@ export const AppointmentsPage: React.FC = () => {
   const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [apptsData, patientsData, staffList, typesList, settingsData] = await Promise.all([
-        appointmentService.getAll({
-          therapist: selectedTherapist,
-          search: searchQuery,
-        }),
-        patientService.getAll(),
-        appointmentService.getTherapists(),
-        appointmentService.fetchAppointmentTypesApi(true),
-        settingsService.getClinicSettings(),
-      ]);
-      const enrichedAppts = apptsData.map((apt) => {
-        let pName = apt.patientName;
-        if ((!pName || pName === 'Patient') && apt.patientId) {
-          const matchedPat = patientsData.find((p) => String(p.id) === String(apt.patientId));
-          if (matchedPat) pName = matchedPat.name;
-        }
-        let tName = apt.therapistName;
-        if ((!tName || tName === 'Physiotherapist' || !tName.trim()) && apt.therapistId) {
-          const matchedStaff = staffList.find((s) => String(s.id) === String(apt.therapistId));
-          if (matchedStaff) tName = matchedStaff.name;
-        }
-        return {
-          ...apt,
-          patientName: pName || 'Patient',
-          therapistName: tName || (staffList[0]?.name || 'Physiotherapist'),
-        };
-      });
+      if (isPatient) {
+        // Patient only fetches their own appointments
+        const [apptsData, staffList, typesList, settingsData] = await Promise.all([
+          appointmentService.getMyAppointments({
+            status: statusFilter !== 'All' ? statusFilter : undefined,
+          }),
+          appointmentService.getTherapists(),
+          appointmentService.fetchAppointmentTypesApi(true),
+          settingsService.getClinicSettings(),
+        ]);
+        const enrichedAppts = apptsData.map((apt) => {
+          let tName = apt.therapistName;
+          if ((!tName || tName === 'Physiotherapist' || !tName.trim()) && apt.therapistId) {
+            const matchedStaff = staffList.find((s) => String(s.id) === String(apt.therapistId));
+            if (matchedStaff) tName = matchedStaff.name;
+          }
+          return {
+            ...apt,
+            patientName: user?.name || apt.patientName || 'My Appointment',
+            therapistName: tName || (staffList[0]?.name || 'Physiotherapist'),
+          };
+        });
 
-      setAppointments(enrichedAppts);
-      setPatients(patientsData);
-      setTherapists(staffList);
-      setAppointmentTypes(typesList);
-      setClinicSettings(settingsData);
+        setAppointments(enrichedAppts);
+        setPatients([]);
+        setTherapists(staffList);
+        setAppointmentTypes(typesList);
+        setClinicSettings(settingsData);
+      } else {
+        const [apptsData, patientsData, staffList, typesList, settingsData] = await Promise.all([
+          appointmentService.getAll({
+            therapist: selectedTherapist,
+            search: searchQuery,
+          }),
+          patientService.getAll(),
+          appointmentService.getTherapists(),
+          appointmentService.fetchAppointmentTypesApi(true),
+          settingsService.getClinicSettings(),
+        ]);
+        const enrichedAppts = apptsData.map((apt) => {
+          let pName = apt.patientName;
+          if ((!pName || pName === 'Patient') && apt.patientId) {
+            const matchedPat = patientsData.find((p) => String(p.id) === String(apt.patientId));
+            if (matchedPat) pName = matchedPat.name;
+          }
+          let tName = apt.therapistName;
+          if ((!tName || tName === 'Physiotherapist' || !tName.trim()) && apt.therapistId) {
+            const matchedStaff = staffList.find((s) => String(s.id) === String(apt.therapistId));
+            if (matchedStaff) tName = matchedStaff.name;
+          }
+          return {
+            ...apt,
+            patientName: pName || 'Patient',
+            therapistName: tName || (staffList[0]?.name || 'Physiotherapist'),
+          };
+        });
+
+        setAppointments(enrichedAppts);
+        setPatients(patientsData);
+        setTherapists(staffList);
+        setAppointmentTypes(typesList);
+        setClinicSettings(settingsData);
+      }
     } catch {
       showToast('Failed to load appointments data.', 'error');
     } finally {
       setIsLoading(false);
     }
-  }, [selectedTherapist, searchQuery, showToast]);
+  }, [isPatient, user?.name, statusFilter, selectedTherapist, searchQuery, showToast]);
 
   useEffect(() => {
     loadData();
@@ -205,10 +241,10 @@ export const AppointmentsPage: React.FC = () => {
     const defaultType = appointmentTypes[0];
 
     setFormData({
-      patientId: '',
-      patientName: '',
+      patientId: isPatient ? '0' : '',
+      patientName: isPatient ? (user?.name || 'Patient') : '',
       patientPhone: '',
-      patientEmail: '',
+      patientEmail: isPatient ? (user?.email || '') : '',
       therapistId: defaultStaff ? defaultStaff.id : '',
       therapistName: defaultStaff ? defaultStaff.name : '',
       appointmentTypeId: defaultType ? defaultType.id : (appointmentTypes[0]?.id || 1),
@@ -310,7 +346,7 @@ export const AppointmentsPage: React.FC = () => {
 
   const validateForm = () => {
     const errors: Record<string, string> = {};
-    if (!formData.patientName.trim()) {
+    if (!isPatient && !formData.patientName.trim()) {
       errors.patientName = 'Patient is required';
     }
     if (!formData.date) {
@@ -333,7 +369,7 @@ export const AppointmentsPage: React.FC = () => {
         showToast('Appointment updated successfully.', 'success');
       } else {
         await appointmentService.create({
-          patientId: formData.patientId || '1',
+          patientId: isPatient ? 0 : (formData.patientId || 1),
           therapistId: formData.therapistId || '1',
           appointmentTypeId: formData.appointmentTypeId,
           date: formData.date,
@@ -342,7 +378,12 @@ export const AppointmentsPage: React.FC = () => {
           type: formData.type,
           notes: formData.notes,
         });
-        showToast('Appointment booked successfully.', 'success');
+        showToast(
+          isPatient
+            ? 'Your appointment has been booked successfully!'
+            : 'Appointment booked successfully.',
+          'success'
+        );
       }
       setIsModalOpen(false);
       loadData();
@@ -643,12 +684,23 @@ export const AppointmentsPage: React.FC = () => {
             </button>
           </div>
 
+          {isAdmin && (
+            <Button
+              variant="outline"
+              iconLeft={<Sliders size={16} />}
+              onClick={() => setIsTypesModalOpen(true)}
+              title="Configure clinical appointment types and durations"
+            >
+              Manage Types
+            </Button>
+          )}
+
           <Button
             variant="primary"
             iconLeft={<Plus size={18} />}
             onClick={() => handleOpenAddModal()}
           >
-            Book Appointment
+            {isPatient ? 'Book My Appointment' : 'Book Appointment'}
           </Button>
         </div>
       </div>
@@ -896,31 +948,70 @@ export const AppointmentsPage: React.FC = () => {
         size="lg"
       >
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <div>
-            <label className="input-label">Select Patient *</label>
-            <select
-              className="therapist-select-control"
-              style={{ width: '100%', marginBottom: '0.5rem' }}
-              value={formData.patientId}
-              onChange={handlePatientSelect}
+          {isPatient ? (
+            <div
+              style={{
+                background: 'rgba(37, 99, 235, 0.08)',
+                border: '1px solid rgba(37, 99, 235, 0.25)',
+                padding: '0.85rem 1rem',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+              }}
             >
-              <option value="">-- Choose Registered Patient --</option>
-              {patients.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name} ({p.phone})
-                </option>
-              ))}
-            </select>
+              <div
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  background: 'var(--primary)',
+                  color: '#ffffff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 700,
+                  fontSize: '0.9rem',
+                }}
+              >
+                {(user?.name || 'P').charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.95rem' }}>
+                  {user?.name || 'Patient'}
+                </div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                  {user?.email} • Self-Service Booking (Account Linked)
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div>
+              <label className="input-label">Select Patient *</label>
+              <select
+                className="therapist-select-control"
+                style={{ width: '100%', marginBottom: '0.5rem' }}
+                value={formData.patientId}
+                onChange={handlePatientSelect}
+              >
+                <option value="">-- Choose Registered Patient --</option>
+                {patients.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name} ({p.phone})
+                  </option>
+                ))}
+              </select>
 
-            <Input
-              name="patientName"
-              placeholder="Or enter patient name manually"
-              value={formData.patientName}
-              onChange={handleFormChange}
-              error={formErrors.patientName}
-              required
-            />
-          </div>
+              <Input
+                name="patientName"
+                placeholder="Or enter patient name manually"
+                value={formData.patientName}
+                onChange={handleFormChange}
+                error={formErrors.patientName}
+                required
+              />
+            </div>
+          )}
 
           <div className="form-grid-2">
             <div>
@@ -1015,6 +1106,22 @@ export const AppointmentsPage: React.FC = () => {
             </Button>
           </div>
         </form>
+      </Modal>
+
+      {/* Appointment Types Direct Shortcut Modal */}
+      <Modal
+        isOpen={isTypesModalOpen}
+        onClose={() => setIsTypesModalOpen(false)}
+        title="Appointment Types Configuration"
+        size="lg"
+      >
+        <AppointmentTypesTab
+          isCompact={true}
+          onTypesChanged={async () => {
+            const typesList = await appointmentService.fetchAppointmentTypesApi(true);
+            setAppointmentTypes(typesList);
+          }}
+        />
       </Modal>
     </div>
   );

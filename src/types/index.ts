@@ -250,3 +250,12 @@ export interface Exercise {
   videoUrl?: string;
   imageUrl?: string;
 }
+
+export interface AppointmentType {
+  id: number;
+  name: string;
+  durationMinutes: number;
+  description?: string;
+  isActive: boolean;
+  createdAt?: string;
+}

@@ -8,19 +8,25 @@ import {
   Save,
   CheckCircle2,
   Lock,
+  Calendar as CalendarIcon,
 } from 'lucide-react';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Input } from '../components/common/Input';
 import { useAuth, useNotification } from '../hooks';
 import { settingsService, type ClinicSettings } from '../services/settingsService';
+import { AppointmentTypesTab } from '../components/settings/AppointmentTypesTab';
 import './SettingsPage.css';
 
 export const SettingsPage: React.FC = () => {
   const { user } = useAuth();
   const { showToast } = useNotification();
+  const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
+  const isPatient = user?.role === 'patient';
 
-  const [activeTab, setActiveTab] = useState<'clinic' | 'profile' | 'notifications' | 'security'>('clinic');
+  const [activeTab, setActiveTab] = useState<'clinic' | 'profile' | 'appointmentTypes' | 'notifications' | 'security'>(
+    isAdmin ? 'clinic' : 'profile'
+  );
   const [settings, setSettings] = useState<ClinicSettings | null>(null);
   const [isSaving, setIsSaving] = useState<boolean>(false);
 
@@ -43,11 +49,17 @@ export const SettingsPage: React.FC = () => {
   }, [showToast]);
 
   useEffect(() => {
-    loadSettings();
-  }, [loadSettings]);
+    if (isAdmin) {
+      loadSettings();
+    }
+  }, [isAdmin, loadSettings]);
 
   const handleClinicSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isAdmin) {
+      showToast('Access denied: Only administrators can update clinic settings.', 'error');
+      return;
+    }
     if (!settings) return;
     setIsSaving(true);
     try {
@@ -103,13 +115,15 @@ export const SettingsPage: React.FC = () => {
 
       {/* Tabs */}
       <div className="settings-tabs">
-        <button
-          className={`settings-tab-btn ${activeTab === 'clinic' ? 'active' : ''}`}
-          onClick={() => setActiveTab('clinic')}
-        >
-          <Building size={18} />
-          Clinic Profile
-        </button>
+        {isAdmin && (
+          <button
+            className={`settings-tab-btn ${activeTab === 'clinic' ? 'active' : ''}`}
+            onClick={() => setActiveTab('clinic')}
+          >
+            <Building size={18} />
+            Clinic Profile
+          </button>
+        )}
 
         <button
           className={`settings-tab-btn ${activeTab === 'profile' ? 'active' : ''}`}
@@ -119,13 +133,30 @@ export const SettingsPage: React.FC = () => {
           User Profile
         </button>
 
-        <button
-          className={`settings-tab-btn ${activeTab === 'notifications' ? 'active' : ''}`}
-          onClick={() => setActiveTab('notifications')}
-        >
-          <Bell size={18} />
-          Notifications & Alerts
-        </button>
+        {!isPatient && (
+          <button
+            className={`settings-tab-btn ${activeTab === 'appointmentTypes' ? 'active' : ''}`}
+            onClick={() => setActiveTab('appointmentTypes')}
+          >
+            <CalendarIcon size={18} />
+            Appointment Types
+            {!isAdmin && (
+              <span style={{ fontSize: '0.72rem', padding: '0.1rem 0.45rem', borderRadius: '4px', background: 'var(--bg-secondary)', color: 'var(--text-muted)', marginLeft: '0.25rem' }}>
+                View only
+              </span>
+            )}
+          </button>
+        )}
+
+        {isAdmin && (
+          <button
+            className={`settings-tab-btn ${activeTab === 'notifications' ? 'active' : ''}`}
+            onClick={() => setActiveTab('notifications')}
+          >
+            <Bell size={18} />
+            Notifications & Alerts
+          </button>
+        )}
 
         <button
           className={`settings-tab-btn ${activeTab === 'security' ? 'active' : ''}`}
@@ -363,6 +394,11 @@ export const SettingsPage: React.FC = () => {
             </div>
           </form>
         </Card>
+      )}
+
+      {/* Appointment Types Management Tab */}
+      {activeTab === 'appointmentTypes' && !isPatient && (
+        <AppointmentTypesTab />
       )}
     </div>
   );

@@ -6,6 +6,7 @@ import { AppLayout } from "../layouts/AppLayout";
 import { AuthLayout } from "../layouts/AuthLayout";
 
 import { LoginPage } from "../pages/LoginPage";
+import { RegisterPage } from "../pages/RegisterPage";
 import { DashboardPage } from "../pages/DashboardPage";
 import { NotFoundPage } from "../pages/NotFoundPage";
 import { UnauthorizedPage } from "../pages/UnauthorizedPage";
@@ -35,6 +36,7 @@ export const AppRoutes: React.FC = () => {
         }
       >
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
       </Route>
 
       {/* Protected routes wrapped in ProtectedRoute and AppLayout */}

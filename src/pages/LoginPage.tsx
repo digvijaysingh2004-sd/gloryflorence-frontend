@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import {
   Mail,
   Lock,
@@ -198,6 +198,13 @@ export const LoginPage: React.FC = () => {
         >
           Sign In
         </Button>
+
+        <div style={{ textAlign: 'center', marginTop: '1.25rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+          New patient looking to book a session?{' '}
+          <Link to="/register" style={{ color: 'var(--primary)', fontWeight: 600, textDecoration: 'none' }}>
+            Register as New Patient
+          </Link>
+        </div>
       </form>
     </div>
   );

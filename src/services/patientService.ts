@@ -186,6 +186,17 @@ export const patientService = {
     }
   },
 
+  // GET /api/patients/me - Get Current Logged-in Patient Profile
+  getMyProfile: async (): Promise<Patient | null> => {
+    try {
+      const response = await api.get("/patients/me");
+      return mapBackendPatient(response.data);
+    } catch (err) {
+      console.warn("Failed to fetch patient self-profile:", err);
+      return null;
+    }
+  },
+
   // GET /api/Patients/{id}
   getById: async (id: string): Promise<Patient> => {
     const response = await api.get(`/patients/${id}`);
