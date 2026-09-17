@@ -19,6 +19,9 @@ out/
 .env.*
 !.env.example
 !.env.template
+!.env.production
+!.env.development
+!.env.live
 
 # Logs & Debugging
 logs/
