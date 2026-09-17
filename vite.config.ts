@@ -4,8 +4,8 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
-  // Default to local IIS Express (https://localhost:44332), or customize via VITE_BACKEND_TARGET
-  const backendTarget = env.VITE_BACKEND_TARGET || 'https://localhost:44332'
+  // Default to local backend (http://localhost:5000), or customize via VITE_BACKEND_TARGET
+  const backendTarget = env.VITE_BACKEND_TARGET || 'http://localhost:5000'
 
   return {
     plugins: [react()],
