@@ -14,7 +14,7 @@ import { Table, type Column } from '../components/common/Table';
 import { Button } from '../components/common/Button';
 import { Modal } from '../components/common/Modal';
 import { Input } from '../components/common/Input';
-import { useNotification } from '../context/NotificationContext';
+import { useNotification } from '../hooks';
 import { appointmentService } from '../services/appointmentService';
 import { patientService } from '../services/patientService';
 import type { Appointment } from '../types';
@@ -56,11 +56,15 @@ export const DashboardPage: React.FC = () => {
   const loadDashboardData = React.useCallback(async () => {
     setIsTableLoading(true);
     try {
-      const [apptsData, patientsData] = await Promise.all([
-        appointmentService.getAll({ date: new Date().toISOString().split('T')[0] }),
+      const [allAppts, patientsData] = await Promise.all([
+        appointmentService.getAll({}),
         patientService.getAll(),
       ]);
-      setAppointments(apptsData);
+      const todayStr = new Date().toISOString().split('T')[0];
+      const todaysAppts = allAppts.filter((a) => a.date === todayStr);
+
+      // If today has appointments, show today's visits. Otherwise, fall back to all appointments.
+      setAppointments(todaysAppts.length > 0 ? todaysAppts : allAppts);
       setActivePatientCount(patientsData.length);
     } catch {
       showToast('Failed to load dashboard data.', 'error');
@@ -83,12 +87,10 @@ export const DashboardPage: React.FC = () => {
 
     try {
       await appointmentService.create({
-        patientName: newPatient,
-        therapistName: newPhysio,
+        patientId: '1',
         time: newTime,
         type: newTreatment,
         date: new Date().toISOString().split('T')[0],
-        status: 'Scheduled',
       });
       showToast(`Appointment scheduled for ${newPatient} successfully!`, 'success');
       setNewPatient('');
@@ -135,7 +137,7 @@ export const DashboardPage: React.FC = () => {
       key: 'therapistName',
       title: 'Physiotherapist',
       render: (item) => (
-        <span>{item.therapistName || 'Dr. Glory Physiotherapist'}</span>
+        <span>{item.therapistName || '—'}</span>
       ),
     },
     { key: 'time', title: 'Scheduled Time', width: '130px' },

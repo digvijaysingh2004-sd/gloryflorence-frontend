@@ -37,6 +37,7 @@ export interface UserDto {
   isActive: boolean;
   firstName: string;
   lastName: string;
+  name?: string;
   createdAt: string;
 }
 
@@ -49,6 +50,7 @@ export interface LoginResponseDto {
 
 export interface PatientDto {
   id: number;
+  mrn?: string;
   firstName: string;
   lastName: string;
   dateOfBirth: string; // ISO string
@@ -56,7 +58,24 @@ export interface PatientDto {
   email: string;
   phoneNumber: string;
   address: string;
+  bloodGroup?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  registrationDate?: string;
+  status?: string;
   medicalHistory: string;
+  vitals?: {
+    bloodPressure?: string;
+    heartRate?: number;
+    weightKg?: number;
+    heightCm?: number;
+    temperature?: number;
+    oxygenSaturation?: number;
+    updatedAt?: string;
+  };
 }
 
 export interface CreatePatientDto {
@@ -67,6 +86,12 @@ export interface CreatePatientDto {
   email?: string;
   phoneNumber: string;
   address?: string;
+  bloodGroup?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
   medicalHistory?: string;
 }
 
@@ -79,7 +104,19 @@ export interface UpdatePatientDto {
   email?: string;
   phoneNumber: string;
   address?: string;
+  bloodGroup?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
   medicalHistory?: string;
+  bloodPressure?: string;
+  heartRate?: number;
+  weightKg?: number;
+  heightCm?: number;
+  temperature?: number;
+  oxygenSaturation?: number;
 }
 
 export interface PatientMedicalHistoryDto {
@@ -137,6 +174,8 @@ export interface AppointmentDto {
     | 'NoShow';
   reason: string;
   notes: string;
+  room?: string;
+  fee?: number;
   cancellationReason?: string | null;
   createdAt: string;
   updatedAt?: string | null;
@@ -227,6 +266,17 @@ export interface PatientAssessmentDto {
   diagnosis: string;
   clinicalNotes: string;
   recommendations: string;
+  painLocation?: string;
+  painType?: string;
+  aggravatingFactors?: string;
+  relievingFactors?: string;
+  romFindings?: string;
+  postureAndGait?: string;
+  functionalLimitations?: string;
+  prognosis?: string;
+  shortTermGoals?: string;
+  longTermGoals?: string;
+  recommendedFrequency?: string;
   createdAt: string;
   updatedAt?: string | null;
 }
@@ -242,6 +292,17 @@ export interface CreatePatientAssessmentDto {
   diagnosis?: string;
   clinicalNotes?: string;
   recommendations?: string;
+  painLocation?: string;
+  painType?: string;
+  aggravatingFactors?: string;
+  relievingFactors?: string;
+  romFindings?: string;
+  postureAndGait?: string;
+  functionalLimitations?: string;
+  prognosis?: string;
+  shortTermGoals?: string;
+  longTermGoals?: string;
+  recommendedFrequency?: string;
 }
 
 export interface UpdatePatientAssessmentDto {
@@ -254,6 +315,17 @@ export interface UpdatePatientAssessmentDto {
   diagnosis?: string;
   clinicalNotes?: string;
   recommendations?: string;
+  painLocation?: string;
+  painType?: string;
+  aggravatingFactors?: string;
+  relievingFactors?: string;
+  romFindings?: string;
+  postureAndGait?: string;
+  functionalLimitations?: string;
+  prognosis?: string;
+  shortTermGoals?: string;
+  longTermGoals?: string;
+  recommendedFrequency?: string;
 }
 
 // --- Treatment Plan Module ---
@@ -288,6 +360,8 @@ export interface TreatmentPlanDto {
   expectedEndDate: string;
   numberOfSessions: number;
   goal: string;
+  diagnosis?: string;
+  treatmentFrequency?: string;
   notes: string;
   status: 'Draft' | 'Active' | 'Completed' | 'Discontinued';
   createdAt: string;
@@ -303,6 +377,8 @@ export interface CreateTreatmentPlanDto {
   expectedEndDate: string;
   numberOfSessions: number;
   goal?: string;
+  diagnosis?: string;
+  treatmentFrequency?: string;
   notes?: string;
   status?: string;
   details: CreateTreatmentPlanDetailDto[];
@@ -327,6 +403,9 @@ export interface TreatmentSessionDto {
   assessment: string;
   treatmentPerformed: string;
   recommendations: string;
+  modalitiesConducted?: string;
+  patientTolerance?: string;
+  nextSessionPlan?: string;
   notes: string;
   createdAt: string;
   updatedAt?: string | null;
@@ -346,6 +425,9 @@ export interface CreateTreatmentSessionDto {
   assessment?: string;
   treatmentPerformed?: string;
   recommendations?: string;
+  modalitiesConducted?: string;
+  patientTolerance?: string;
+  nextSessionPlan?: string;
   notes?: string;
 }
 

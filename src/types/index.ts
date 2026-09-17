@@ -1,6 +1,6 @@
-export * from './api.types';
+export * from "./api.types";
 
-export type ToastType = 'success' | 'error' | 'warning' | 'info';
+export type ToastType = "success" | "error" | "warning" | "info";
 
 export interface Toast {
   id: string;
@@ -13,7 +13,14 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  role: 'admin' | 'superadmin' | 'physiotherapist' | 'doctor' | 'receptionist' | 'accountant' | 'patient';
+  role:
+    | "admin"
+    | "superadmin"
+    | "physiotherapist"
+    | "doctor"
+    | "receptionist"
+    | "accountant"
+    | "patient";
 }
 
 export interface AuthState {
@@ -26,8 +33,8 @@ export interface MedicalHistory {
   id: string;
   condition: string;
   diagnosedDate: string;
-  severity: 'Mild' | 'Moderate' | 'Severe';
-  status: 'Active' | 'Resolved' | 'Chronic';
+  severity: "Mild" | "Moderate" | "Severe";
+  status: "Active" | "Resolved" | "Chronic";
   notes?: string;
 }
 
@@ -52,7 +59,7 @@ export interface Appointment {
   date: string;
   time: string;
   durationMinutes?: number;
-  status: 'Scheduled' | 'Completed' | 'Cancelled' | 'No Show';
+  status: "Scheduled" | "Completed" | "Cancelled" | "No Show";
   type: string;
   notes?: string;
   room?: string;
@@ -62,19 +69,26 @@ export interface Appointment {
 export interface ClinicalAssessment {
   id: string;
   patientId: string;
+  physiotherapistId?: number;
   assessmentDate: string;
   assessedBy: string;
   chiefComplaint: string;
   painScore: number; // VAS 0 - 10
   painLocation: string;
-  painType: 'Sharp' | 'Dull Aching' | 'Burning' | 'Throbbing' | 'Radiating' | 'Stiffness';
+  painType:
+    | "Sharp"
+    | "Dull Aching"
+    | "Burning"
+    | "Throbbing"
+    | "Radiating"
+    | "Stiffness";
   aggravatingFactors?: string;
   relievingFactors?: string;
   romFindings?: string;
   postureAndGait?: string;
   functionalLimitations?: string;
   clinicalDiagnosis: string;
-  prognosis: 'Excellent' | 'Good' | 'Fair' | 'Guarded';
+  prognosis: "Excellent" | "Good" | "Fair" | "Guarded";
   shortTermGoals: string;
   longTermGoals: string;
   recommendedFrequency: string;
@@ -83,13 +97,19 @@ export interface ClinicalAssessment {
 
 export interface TreatmentSession {
   id: string;
+  planId?: string;
+  appointmentId?: string;
   date: string;
   notes: string;
   performedBy: string;
   preSessionPain?: number;
   postSessionPain?: number;
-  modalitiesConducted?: string[];
-  patientTolerance?: 'Tolerated Well' | 'Mild Discomfort' | 'Fatigued' | 'Adverse Reaction';
+  modalitiesConducted?: string[] | string;
+  patientTolerance?:
+    | "Tolerated Well"
+    | "Mild Discomfort"
+    | "Fatigued"
+    | "Adverse Reaction";
   nextSessionPlan?: string;
 }
 
@@ -100,7 +120,7 @@ export interface TreatmentPlan {
   endDate: string;
   sessionsCount: number;
   sessionsCompleted: number;
-  status: 'Active' | 'Completed' | 'Suspended';
+  status: "Active" | "Completed" | "Suspended";
   goals: string;
   treatments: string[];
   treatmentFrequency?: string;
@@ -112,12 +132,23 @@ export interface TreatmentPlan {
 export interface Invoice {
   id: string;
   invoiceNumber: string;
+  patientId?: string;
+  patientName?: string;
+  patientPhone?: string;
+  patientEmail?: string;
   date: string;
   dueDate: string;
   amount: number;
   paidAmount: number;
   balanceAmount: number;
-  status: 'Paid' | 'Unpaid' | 'Partially Paid';
+  status: "Paid" | "Unpaid" | "Partially Paid" | "Overdue";
+  notes?: string;
+  items?: Array<{
+    description: string;
+    quantity: number;
+    unitPrice: number;
+    totalAmount: number;
+  }>;
 }
 
 export interface Patient {
@@ -125,7 +156,7 @@ export interface Patient {
   name: string;
   email: string;
   phone: string;
-  gender: 'Male' | 'Female' | 'Other';
+  gender: "Male" | "Female" | "Other";
   dateOfBirth: string;
   bloodGroup: string;
   address: string;
@@ -135,7 +166,7 @@ export interface Patient {
   emergencyContactName: string;
   emergencyContactPhone: string;
   registrationDate: string;
-  status: 'Active' | 'Inactive';
+  status: "Active" | "Inactive";
   medicalHistory?: MedicalHistory[];
   documents?: PatientDocument[];
   appointments?: Appointment[];
@@ -148,6 +179,8 @@ export interface Patient {
     heartRate?: number;
     weightKg?: number;
     heightCm?: number;
+    temperature?: number;
+    oxygenSaturation?: number;
     updatedAt?: string;
   };
 }
@@ -172,29 +205,42 @@ export interface ExercisePrescription {
   prescribedDate: string;
   prescribedBy: string;
   diagnosis: string;
-  status: 'Active' | 'Completed' | 'Suspended';
+  status: "Active" | "Completed" | "Suspended";
   targetGoal: string;
   generalInstructions?: string;
+  instructions?: string;
   items: PrescribedExerciseItem[];
 }
 
 export interface TreatmentType {
   id: string;
   name: string;
-  category: 'Manual Therapy' | 'Electrotherapy' | 'Exercise Therapy' | 'Hydrotherapy' | 'Specialized Rehabilitation' | 'Other';
+  category:
+    | "Manual Therapy"
+    | "Electrotherapy"
+    | "Exercise Therapy"
+    | "Hydrotherapy"
+    | "Specialized Rehabilitation"
+    | "Other";
   description: string;
   durationMinutes: number;
   defaultPrice: number;
-  status: 'Active' | 'Inactive';
+  status: "Active" | "Inactive";
   requiredEquipment?: string[];
 }
 
 export interface Exercise {
   id: string;
   title: string;
-  category: 'Strengthening' | 'Mobility & Stretching' | 'Core Stability' | 'Balance & Coordination' | 'Postural Correction' | 'Cardiovascular';
+  category:
+    | "Strengthening"
+    | "Mobility & Stretching"
+    | "Core Stability"
+    | "Balance & Coordination"
+    | "Postural Correction"
+    | "Cardiovascular";
   targetMuscleGroup: string;
-  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
+  difficulty: "Beginner" | "Intermediate" | "Advanced";
   equipment: string;
   defaultSets: number;
   defaultReps: number;
@@ -204,4 +250,3 @@ export interface Exercise {
   videoUrl?: string;
   imageUrl?: string;
 }
-

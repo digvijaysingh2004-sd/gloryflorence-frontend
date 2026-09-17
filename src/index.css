@@ -90,6 +90,8 @@
   --border-card: #e2e8f0;
   
   --card-bg: #ffffff;
+  --bg-card: #ffffff;
+  --bg-secondary: #f1f5f9;
   --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
 
   /* Transitions */
@@ -126,6 +128,8 @@
   --border-card: #222e42;
 
   --card-bg: #151c28;
+  --bg-card: #151c28;
+  --bg-secondary: #1c2638;
   --card-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.35);
 }
 
@@ -238,4 +242,310 @@ a {
   background: linear-gradient(90deg, var(--slate-100) 25%, var(--slate-200) 50%, var(--slate-100) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite linear;
+}
+
+/* Global Printable Document Styles & PDF Export Overrides */
+.invoice-printable-container,
+.prescription-printable-container {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: var(--radius-lg);
+  width: 210mm !important;
+  max-width: 100% !important;
+  margin: 0 auto !important;
+  box-sizing: border-box !important;
+  padding: 8mm 10mm !important;
+  font-family: inherit !important;
+  line-height: 1.4 !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Document Header & Clinic Titles */
+.company-info h3,
+.rx-print-clinic-name,
+.invoice-meta-header h2 {
+  color: #0f766e !important;
+  font-weight: 800 !important;
+}
+
+.company-info p,
+.invoice-meta-header p,
+.rx-print-clinic-addr,
+.rx-print-badge-date,
+.rx-print-muscle {
+  color: #475569 !important;
+}
+
+.rx-print-clinic-sub,
+.rx-print-badge-num {
+  color: #0d9488 !important;
+  font-weight: 600 !important;
+}
+
+.rx-print-badge-title {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+.rx-print-hr,
+.print-divider {
+  border: 0 !important;
+  height: 1px !important;
+  background-color: #cbd5e1 !important;
+  margin: 1.25rem 0 !important;
+}
+
+/* Recipient & Patient Metadata Blocks */
+.invoice-recipient-block,
+.rx-print-patient-meta-grid,
+.rx-print-directions-box {
+  background-color: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: var(--radius-md) !important;
+  padding: 1rem 1.25rem !important;
+  margin-bottom: 1.25rem !important;
+  color: #1e293b !important;
+}
+
+.invoice-recipient-block strong,
+.invoice-recipient-block h4,
+.rx-meta-col strong,
+.rx-print-directions-box strong {
+  color: #0f172a !important;
+}
+
+.invoice-recipient-block p,
+.rx-meta-col p {
+  color: #334155 !important;
+}
+
+/* Target Goal Banner */
+.rx-print-goal-banner {
+  background-color: #f0fdfa !important;
+  border-left: 4px solid #0d9488 !important;
+  padding: 0.75rem 1rem !important;
+  font-size: 0.875rem !important;
+  color: #134e4a !important;
+  border-radius: 0 4px 4px 0 !important;
+  margin-bottom: 0.85rem !important;
+}
+
+.rx-print-goal-banner strong {
+  color: #0f766e !important;
+}
+
+/* Exercise Cards & Dosage Bars */
+.rx-print-section-title {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+  border-bottom: 2px solid #e2e8f0 !important;
+  padding-bottom: 0.5rem !important;
+  margin-bottom: 1rem !important;
+}
+
+.rx-print-item-card {
+  background-color: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: var(--radius-md) !important;
+  padding: 1.25rem !important;
+  margin-bottom: 1rem !important;
+}
+
+.rx-print-title {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+.rx-print-number {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+}
+
+.rx-print-dosage-bar {
+  background-color: #f1f5f9 !important;
+  border-radius: var(--radius-sm) !important;
+  padding: 0.6rem 0.85rem !important;
+  color: #1e293b !important;
+}
+
+.rx-print-dosage-bar .dosage-item {
+  color: #334155 !important;
+}
+
+.rx-print-dosage-bar .dosage-item strong {
+  color: #0f172a !important;
+}
+
+.rx-print-dosage-bar .dosage-item.highlight {
+  color: #0d9488 !important;
+}
+
+.rx-print-instructions {
+  color: #334155 !important;
+}
+
+.rx-print-instructions strong {
+  color: #0f172a !important;
+}
+
+.rx-print-instructions li {
+  color: #334155 !important;
+}
+
+.rx-print-precautions {
+  background-color: #fffbeb !important;
+  border-left: 4px solid #f59e0b !important;
+  padding: 0.65rem 0.85rem !important;
+  color: #78350f !important;
+  border-radius: 0 4px 4px 0 !important;
+}
+
+.rx-print-precautions strong {
+  color: #92400e !important;
+}
+
+.rx-print-tracker-row {
+  color: #334155 !important;
+}
+
+.rx-print-tracker-row .tracker-label {
+  color: #0f172a !important;
+  font-weight: 600 !important;
+}
+
+.rx-print-tracker-row .day-name {
+  color: #64748b !important;
+}
+
+.rx-print-tracker-row .day-checkbox {
+  border: 1px solid #94a3b8 !important;
+  background-color: #ffffff !important;
+}
+
+.rx-print-footer-grid .rx-print-warning {
+  color: #64748b !important;
+}
+
+.signature-name {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+.signature-title,
+.signature-date {
+  color: #64748b !important;
+}
+
+/* Printable Itemized Invoice Table */
+.print-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  margin: 1.5rem 0 !important;
+}
+
+.print-table th {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+  border-bottom: 2px solid #cbd5e1 !important;
+  padding: 10px 12px !important;
+  font-weight: 700 !important;
+  text-align: left !important;
+}
+
+.print-table td {
+  padding: 10px 12px !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+  background-color: #ffffff !important;
+}
+
+.invoice-totals-wrapper .totals-row span {
+  color: #334155 !important;
+}
+
+.invoice-totals-wrapper .totals-row.total-highlight span {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+.invoice-totals-wrapper .totals-row.text-success span {
+  color: #10b981 !important;
+  font-weight: 600 !important;
+}
+
+.invoice-totals-wrapper .totals-row.text-danger span {
+  color: #ef4444 !important;
+  font-weight: 700 !important;
+}
+
+/* Modal Print Buttons Bar */
+.prescription-print-footer-actions,
+.invoice-print-footer-actions {
+  display: flex !important;
+  justify-content: flex-end !important;
+  gap: 0.75rem !important;
+  margin-top: 1.5rem !important;
+  border-top: 1px solid #e2e8f0 !important;
+  padding-top: 1rem !important;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm;
+  }
+
+  header, nav, .sidebar, .navbar, .app-header, .app-sidebar, button, .modal-close, .modal-close-btn, .modal-header, .prescription-print-footer-actions, .invoice-print-footer-actions, .action-icon-btn {
+    display: none !important;
+  }
+
+  html, body, #root, .app-layout, .app-container, .main-content, .modal-overlay, .modal-backdrop, .modal-container, .modal-content, .modal-body {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  .invoice-printable-container,
+  .prescription-printable-container {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  .invoice-printable-container *,
+  .prescription-printable-container * {
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  .rx-print-item-card,
+  .rx-print-patient-meta-grid,
+  .rx-print-clinic-header,
+  .rx-print-footer-grid,
+  .print-table,
+  .invoice-totals-wrapper {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
 }

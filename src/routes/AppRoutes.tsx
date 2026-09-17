@@ -7,13 +7,15 @@ import { AuthLayout } from "../layouts/AuthLayout";
 
 import { LoginPage } from "../pages/LoginPage";
 import { DashboardPage } from "../pages/DashboardPage";
-import { PlaceholderPage } from "../pages/PlaceholderPage";
 import { NotFoundPage } from "../pages/NotFoundPage";
 import { UnauthorizedPage } from "../pages/UnauthorizedPage";
 import { PatientsPage } from "../pages/PatientsPage";
 import { PatientDetailsPage } from "../pages/PatientDetailsPage";
 import { AppointmentsPage } from "../pages/AppointmentsPage";
 import { TreatmentsPage } from "../pages/TreatmentsPage";
+import { BillingPage } from "../pages/BillingPage";
+import { InvoicesPage } from "../pages/InvoicesPage";
+import { SettingsPage } from "../pages/SettingsPage";
 
 const AppLayoutWrapper = () => (
   <AppLayout>
@@ -99,18 +101,16 @@ export const AppRoutes: React.FC = () => {
             />
           </Route>
 
-          {/* Billing Module */}
+          {/* Billing & Invoices Module */}
           <Route
             element={
               <RoleProtectedRoute
-                allowedRoles={["admin", "superadmin", "accountant"]}
+                allowedRoles={["admin", "superadmin", "accountant", "receptionist"]}
               />
             }
           >
-            <Route
-              path="/billing"
-              element={<PlaceholderPage title="Billing" />}
-            />
+            <Route path="/billing" element={<BillingPage />} />
+            <Route path="/invoices" element={<InvoicesPage />} />
           </Route>
 
           {/* Settings Module */}
@@ -129,10 +129,7 @@ export const AppRoutes: React.FC = () => {
               />
             }
           >
-            <Route
-              path="/settings"
-              element={<PlaceholderPage title="Settings" />}
-            />
+            <Route path="/settings" element={<SettingsPage />} />
           </Route>
         </Route>
       </Route>

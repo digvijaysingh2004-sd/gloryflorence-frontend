@@ -110,9 +110,59 @@ select:-webkit-autofill:focus {
 }
 
 /* Textarea specific */
-.input-field-textarea {
-  min-height: 100px;
+.input-field-textarea,
+textarea,
+.form-textarea {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 0.875rem;
+  font-family: inherit;
+  line-height: 1.5;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  transition: all var(--transition-fast);
+  outline: none;
   resize: vertical;
+  min-height: 90px;
+  box-sizing: border-box;
+}
+
+textarea:focus,
+.form-textarea:focus {
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+}
+
+textarea::placeholder,
+.form-textarea::placeholder {
+  color: var(--text-muted);
+}
+
+/* Select Controls */
+select,
+.form-select,
+.therapist-select-control {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  transition: all var(--transition-fast);
+  outline: none;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+select:focus,
+.form-select:focus,
+.therapist-select-control:focus {
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
 }
 
 /* Error state */

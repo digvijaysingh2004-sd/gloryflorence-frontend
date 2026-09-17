@@ -25,15 +25,7 @@ export const prescriptionService = {
 
   // 10.9 Get Prescriptions by Patient: GET /api/patients/{patientId}/exercise-prescriptions
   getPrescriptionsByPatient: async (patientId: string): Promise<ExercisePrescription[]> => {
-    try {
-      const response = await api.get(`/patients/${patientId}/exercise-prescriptions`);
-      const list = Array.isArray(response.data) ? response.data : response.data?.items || [];
-      if (list.length > 0) return list;
-    } catch {
-      // Fallback
-    }
-    const patient = await patientService.getById(patientId);
-    return patient?.prescriptions || [];
+    return patientService.getPrescriptions(patientId);
   },
 
   // 10.10 Get Prescriptions by Treatment Plan: GET /api/treatment-plans/{treatmentPlanId}/exercise-prescriptions
@@ -49,7 +41,10 @@ export const prescriptionService = {
   // 10.3 Create Exercise Prescription: POST /api/exercise-prescriptions
   createPrescription: async (
     patientId: string,
-    data: Omit<ExercisePrescription, 'id'>
+    data: Omit<ExercisePrescription, 'id'> & {
+      physiotherapistId?: number;
+      treatmentPlanId?: number;
+    }
   ): Promise<ExercisePrescription> => {
     return patientService.createPrescription(patientId, data);
   },

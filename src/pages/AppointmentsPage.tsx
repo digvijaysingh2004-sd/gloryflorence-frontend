@@ -14,7 +14,6 @@ import {
   AlertTriangle,
   Search,
   Stethoscope,
-  DollarSign,
   Edit2,
   Trash2,
 } from 'lucide-react';
@@ -23,164 +22,234 @@ import { Button } from '../components/common/Button';
 import { Input } from '../components/common/Input';
 import { Modal } from '../components/common/Modal';
 import { Table, type Column } from '../components/common/Table';
-import { useNotification } from '../context/NotificationContext';
+import { useNotification } from '../hooks';
 import {
   appointmentService,
   timeToMinutes,
+  minutesToTimeStr,
 } from '../services/appointmentService';
 import { patientService } from '../services/patientService';
+import { settingsService, type ClinicSettings } from '../services/settingsService';
 import type { Appointment, Patient } from '../types';
 import './AppointmentsPage.css';
 
-// Operating hours for timeline: 08:00 AM to 06:00 PM
-const OPERATING_HOURS = [
-  { hour: 8, label: '08:00 AM' },
-  { hour: 9, label: '09:00 AM' },
-  { hour: 10, label: '10:00 AM' },
-  { hour: 11, label: '11:00 AM' },
-  { hour: 12, label: '12:00 PM' },
-  { hour: 13, label: '01:00 PM' },
-  { hour: 14, label: '02:00 PM' },
-  { hour: 15, label: '03:00 PM' },
-  { hour: 16, label: '04:00 PM' },
-  { hour: 17, label: '05:00 PM' },
-  { hour: 18, label: '06:00 PM' },
-];
+
+
+const getTodayStr = (): string => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const addDays = (dateStr: string, days: number): string => {
+  const parts = dateStr.split('-');
+  const y = parseInt(parts[0], 10) || 2026;
+  const m = parseInt(parts[1], 10) || 1;
+  const d = parseInt(parts[2], 10) || 1;
+  const date = new Date(y, m - 1, d + days);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 export const AppointmentsPage: React.FC = () => {
   const { showToast } = useNotification();
 
-  // View Mode: 'timeline' | 'table'
   const [viewMode, setViewMode] = useState<'timeline' | 'table'>('timeline');
-
-  // Date Selection
-  const [selectedDate, setSelectedDate] = useState<string>(() => {
-    return new Date().toISOString().split('T')[0];
-  });
-
-  // Filters
+  const [selectedDate, setSelectedDate] = useState<string>(getTodayStr);
   const [selectedTherapist, setSelectedTherapist] = useState<string>('All');
   const [statusFilter, setStatusFilter] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  // Data State
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [patients, setPatients] = useState<Patient[]>([]);
+  const [therapists, setTherapists] = useState<Array<{ id: string; name: string }>>([]);
+  const [appointmentTypes, setAppointmentTypes] = useState<Array<{ id: number; name: string; durationMinutes?: number }>>([]);
+  const [clinicSettings, setClinicSettings] = useState<ClinicSettings | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Modal State
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
 
-  // Form State
-  const initialFormState = {
+  const [formData, setFormData] = useState({
     patientId: '',
     patientName: '',
     patientPhone: '',
     patientEmail: '',
-    therapistName: appointmentService.getTherapists()[0] || 'Dr. Glory Physiotherapist',
+    therapistId: '',
+    therapistName: '',
+    appointmentTypeId: 1,
     date: selectedDate,
     time: '10:00 AM',
     durationMinutes: 45,
-    type: appointmentService.getAppointmentTypes()[0] || 'Physiotherapy Session',
-    room: appointmentService.getRooms()[0] || 'Room 101 (Assessment)',
-    fee: 65,
+    type: '',
+    room: '',
+    fee: 0,
     status: 'Scheduled' as 'Scheduled' | 'Completed' | 'Cancelled' | 'No Show',
     notes: '',
-  };
-  const [formData, setFormData] = useState(initialFormState);
+  });
+
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [conflictWarning, setConflictWarning] = useState<string | null>(null);
 
-  // Load appointments and patients
   const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [apptsData, patientsData] = await Promise.all([
+      const [apptsData, patientsData, staffList, typesList, settingsData] = await Promise.all([
         appointmentService.getAll({
-          date: viewMode === 'timeline' ? selectedDate : undefined,
           therapist: selectedTherapist,
-          status: statusFilter,
           search: searchQuery,
         }),
         patientService.getAll(),
+        appointmentService.getTherapists(),
+        appointmentService.fetchAppointmentTypesApi(true),
+        settingsService.getClinicSettings(),
       ]);
-      setAppointments(apptsData);
+      const enrichedAppts = apptsData.map((apt) => {
+        let pName = apt.patientName;
+        if ((!pName || pName === 'Patient') && apt.patientId) {
+          const matchedPat = patientsData.find((p) => String(p.id) === String(apt.patientId));
+          if (matchedPat) pName = matchedPat.name;
+        }
+        let tName = apt.therapistName;
+        if ((!tName || tName === 'Physiotherapist' || !tName.trim()) && apt.therapistId) {
+          const matchedStaff = staffList.find((s) => String(s.id) === String(apt.therapistId));
+          if (matchedStaff) tName = matchedStaff.name;
+        }
+        return {
+          ...apt,
+          patientName: pName || 'Patient',
+          therapistName: tName || (staffList[0]?.name || 'Physiotherapist'),
+        };
+      });
+
+      setAppointments(enrichedAppts);
       setPatients(patientsData);
+      setTherapists(staffList);
+      setAppointmentTypes(typesList);
+      setClinicSettings(settingsData);
     } catch {
-      showToast('Failed to load appointments.', 'error');
+      showToast('Failed to load appointments data.', 'error');
     } finally {
       setIsLoading(false);
     }
-  }, [selectedDate, selectedTherapist, statusFilter, searchQuery, viewMode, showToast]);
+  }, [selectedTherapist, searchQuery, showToast]);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
 
-  // Handle Date Navigation
+  const filteredAppointments = useMemo(() => {
+    if (statusFilter === 'All') return appointments;
+    return appointments.filter((apt) => apt.status.toLowerCase() === statusFilter.toLowerCase());
+  }, [appointments, statusFilter]);
+
   const handlePrevDay = () => {
-    const current = new Date(selectedDate);
-    current.setDate(current.getDate() - 1);
-    setSelectedDate(current.toISOString().split('T')[0]);
+    const uniqueDates = Array.from(new Set(filteredAppointments.map((a) => a.date))).sort((a, b) => a.localeCompare(b));
+    const pastDates = uniqueDates.filter((d) => d < selectedDate);
+
+    if (pastDates.length > 0) {
+      setSelectedDate(pastDates[pastDates.length - 1]);
+    } else if (dateAppointments.length === 0 && uniqueDates.length > 0) {
+      const currentTs = new Date(selectedDate + 'T00:00:00').getTime();
+      let bestDate = uniqueDates[0];
+      let minDiff = Math.abs(new Date(bestDate + 'T00:00:00').getTime() - currentTs);
+      for (let i = 1; i < uniqueDates.length; i++) {
+        const d = uniqueDates[i];
+        const diff = Math.abs(new Date(d + 'T00:00:00').getTime() - currentTs);
+        if (diff < minDiff) {
+          minDiff = diff;
+          bestDate = d;
+        }
+      }
+      setSelectedDate(bestDate);
+    } else {
+      setSelectedDate((prev) => addDays(prev, -1));
+    }
   };
 
   const handleNextDay = () => {
-    const current = new Date(selectedDate);
-    current.setDate(current.getDate() + 1);
-    setSelectedDate(current.toISOString().split('T')[0]);
+    const uniqueDates = Array.from(new Set(filteredAppointments.map((a) => a.date))).sort((a, b) => a.localeCompare(b));
+    const futureDates = uniqueDates.filter((d) => d > selectedDate);
+
+    if (futureDates.length > 0) {
+      setSelectedDate(futureDates[0]);
+    } else if (dateAppointments.length === 0 && uniqueDates.length > 0) {
+      const currentTs = new Date(selectedDate + 'T00:00:00').getTime();
+      let bestDate = uniqueDates[0];
+      let minDiff = Math.abs(new Date(bestDate + 'T00:00:00').getTime() - currentTs);
+      for (let i = 1; i < uniqueDates.length; i++) {
+        const d = uniqueDates[i];
+        const diff = Math.abs(new Date(d + 'T00:00:00').getTime() - currentTs);
+        if (diff < minDiff) {
+          minDiff = diff;
+          bestDate = d;
+        }
+      }
+      setSelectedDate(bestDate);
+    } else {
+      setSelectedDate((prev) => addDays(prev, 1));
+    }
   };
 
   const handleToday = () => {
-    setSelectedDate(new Date().toISOString().split('T')[0]);
-  };
-
-  // Conflict Checking on Form Change
-  const runConflictCheck = (therapist: string, date: string, time: string, duration: number, excludeId?: string) => {
-    const result = appointmentService.checkConflict(therapist, date, time, duration, excludeId);
-    if (result.hasConflict && result.conflictingAppointment) {
-      setConflictWarning(
-        `Conflict Alert: ${therapist} is already booked with ${result.conflictingAppointment.patientName} at ${result.conflictingAppointment.time} (${result.conflictingAppointment.durationMinutes} mins).`
-      );
-    } else {
-      setConflictWarning(null);
-    }
+    setSelectedDate(getTodayStr());
   };
 
   const handleOpenAddModal = (presetTime?: string) => {
     setEditingAppointment(null);
-    const newForm = {
-      ...initialFormState,
+    const defaultStaff = therapists[0];
+    const defaultType = appointmentTypes[0];
+
+    setFormData({
+      patientId: '',
+      patientName: '',
+      patientPhone: '',
+      patientEmail: '',
+      therapistId: defaultStaff ? defaultStaff.id : '',
+      therapistName: defaultStaff ? defaultStaff.name : '',
+      appointmentTypeId: defaultType ? defaultType.id : (appointmentTypes[0]?.id || 1),
       date: selectedDate,
       time: presetTime || '10:00 AM',
-    };
-    setFormData(newForm);
+      durationMinutes: defaultType?.durationMinutes || 45,
+      type: defaultType ? defaultType.name : '',
+      room: '',
+      fee: 0,
+      status: 'Scheduled',
+      notes: '',
+    });
     setFormErrors({});
     setConflictWarning(null);
-    runConflictCheck(newForm.therapistName, newForm.date, newForm.time, newForm.durationMinutes);
     setIsModalOpen(true);
   };
 
   const handleOpenEditModal = (apt: Appointment) => {
     setEditingAppointment(apt);
+    const matchedType = appointmentTypes.find((t) => t.name.toLowerCase() === apt.type.toLowerCase());
+    const matchedTherapist = therapists.find((t) => t.name.toLowerCase() === apt.therapistName.toLowerCase());
+
     setFormData({
       patientId: apt.patientId || '',
       patientName: apt.patientName || '',
       patientPhone: apt.patientPhone || '',
       patientEmail: apt.patientEmail || '',
+      therapistId: matchedTherapist ? matchedTherapist.id : (apt.therapistId || ''),
       therapistName: apt.therapistName,
+      appointmentTypeId: matchedType ? matchedType.id : (appointmentTypes[0]?.id || 1),
       date: apt.date,
       time: apt.time,
       durationMinutes: apt.durationMinutes || 45,
       type: apt.type,
-      room: apt.room || appointmentService.getRooms()[0],
-      fee: apt.fee || 65,
+      room: apt.room || '',
+      fee: apt.fee !== undefined ? apt.fee : 0,
       status: apt.status,
       notes: apt.notes || '',
     });
     setFormErrors({});
     setConflictWarning(null);
-    runConflictCheck(apt.therapistName, apt.date, apt.time, apt.durationMinutes || 45, apt.id);
     setIsModalOpen(true);
   };
 
@@ -208,25 +277,35 @@ export const AppointmentsPage: React.FC = () => {
     }
   };
 
+  const handleTherapistSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedId = e.target.value;
+    const staff = therapists.find((t) => t.id === selectedId);
+    setFormData((prev) => ({
+      ...prev,
+      therapistId: selectedId,
+      therapistName: staff ? staff.name : prev.therapistName,
+    }));
+  };
+
+  const handleAppointmentTypeSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const typeId = parseInt(e.target.value, 10);
+    const selectedType = appointmentTypes.find((t) => t.id === typeId);
+    setFormData((prev) => ({
+      ...prev,
+      appointmentTypeId: typeId,
+      type: selectedType ? selectedType.name : prev.type,
+      durationMinutes: selectedType?.durationMinutes || prev.durationMinutes,
+    }));
+  };
+
   const handleFormChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    const updated = {
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [name]: name === 'durationMinutes' || name === 'fee' ? Number(value) : value,
-    };
-    setFormData(updated);
-
-    if (['therapistName', 'date', 'time', 'durationMinutes'].includes(name)) {
-      runConflictCheck(
-        updated.therapistName,
-        updated.date,
-        updated.time,
-        updated.durationMinutes,
-        editingAppointment?.id
-      );
-    }
+    }));
   };
 
   const validateForm = () => {
@@ -253,7 +332,16 @@ export const AppointmentsPage: React.FC = () => {
         await appointmentService.update(editingAppointment.id, formData);
         showToast('Appointment updated successfully.', 'success');
       } else {
-        await appointmentService.create(formData);
+        await appointmentService.create({
+          patientId: formData.patientId || '1',
+          therapistId: formData.therapistId || '1',
+          appointmentTypeId: formData.appointmentTypeId,
+          date: formData.date,
+          time: formData.time,
+          durationMinutes: formData.durationMinutes,
+          type: formData.type,
+          notes: formData.notes,
+        });
         showToast('Appointment booked successfully.', 'success');
       }
       setIsModalOpen(false);
@@ -287,9 +375,13 @@ export const AppointmentsPage: React.FC = () => {
     }
   };
 
-  // Formatted date string for display
   const formattedDateTitle = useMemo(() => {
-    const dateObj = new Date(selectedDate + 'T00:00:00');
+    if (!selectedDate) return '';
+    const parts = selectedDate.split('-');
+    const year = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1;
+    const day = parseInt(parts[2], 10);
+    const dateObj = new Date(year, month, day);
     return dateObj.toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
@@ -298,7 +390,6 @@ export const AppointmentsPage: React.FC = () => {
     });
   }, [selectedDate]);
 
-  // Status counts
   const statusCounts = useMemo(() => {
     const counts = { All: appointments.length, Scheduled: 0, Completed: 0, Cancelled: 0, 'No Show': 0 };
     for (const a of appointments) {
@@ -307,13 +398,113 @@ export const AppointmentsPage: React.FC = () => {
     return counts;
   }, [appointments]);
 
-  // Group appointments into operating hour slots for timeline
+  const dateAppointments = useMemo(() => {
+    return filteredAppointments.filter((apt) => apt.date === selectedDate);
+  }, [filteredAppointments, selectedDate]);
+
+  const isFiltered = selectedTherapist !== 'All' || statusFilter !== 'All' || searchQuery.trim() !== '';
+
+  const closestTargetInfo = useMemo(() => {
+    if (dateAppointments.length > 0 || filteredAppointments.length === 0) {
+      return null;
+    }
+
+    const uniqueDates = Array.from(new Set(filteredAppointments.map((a) => a.date)));
+    const currentTs = new Date(selectedDate + 'T00:00:00').getTime();
+
+    let bestDate = uniqueDates[0];
+    let minDiff = Math.abs(new Date(bestDate + 'T00:00:00').getTime() - currentTs);
+
+    for (let i = 1; i < uniqueDates.length; i++) {
+      const d = uniqueDates[i];
+      const diff = Math.abs(new Date(d + 'T00:00:00').getTime() - currentTs);
+      if (diff < minDiff) {
+        minDiff = diff;
+        bestDate = d;
+      } else if (diff === minDiff) {
+        if (d > selectedDate) {
+          bestDate = d;
+        }
+      }
+    }
+
+    const countOnTargetDate = filteredAppointments.filter((a) => a.date === bestDate).length;
+
+    return {
+      targetDate: bestDate,
+      countOnTargetDate,
+      totalMatching: filteredAppointments.length,
+    };
+  }, [dateAppointments.length, filteredAppointments, selectedDate]);
+
+  const operatingHours = useMemo(() => {
+    let startHour = 8;
+    let endHour = 18;
+
+    if (clinicSettings?.workingHoursStart) {
+      const mins = timeToMinutes(clinicSettings.workingHoursStart);
+      startHour = Math.floor(mins / 60);
+    }
+    if (clinicSettings?.workingHoursEnd) {
+      const mins = timeToMinutes(clinicSettings.workingHoursEnd);
+      if (mins > 0) endHour = Math.ceil(mins / 60);
+    }
+
+    if (startHour < 0) startHour = 0;
+    if (endHour > 23) endHour = 23;
+    if (startHour >= endHour) {
+      startHour = 8;
+      endHour = 18;
+    }
+
+    for (const apt of dateAppointments) {
+      const aptMins = timeToMinutes(apt.time);
+      const aptHour = Math.floor(aptMins / 60);
+      if (aptHour < startHour) startHour = aptHour;
+      if (aptHour > endHour) endHour = aptHour;
+    }
+
+    const slots = [];
+    for (let h = startHour; h <= endHour; h++) {
+      const label = minutesToTimeStr(h * 60);
+      slots.push({ hour: h, label });
+    }
+    return slots;
+  }, [clinicSettings, dateAppointments]);
+
+  const bookingTimeOptions = useMemo(() => {
+    let startHour = 8;
+    let endHour = 18;
+
+    if (clinicSettings?.workingHoursStart) {
+      const mins = timeToMinutes(clinicSettings.workingHoursStart);
+      startHour = Math.floor(mins / 60);
+    }
+    if (clinicSettings?.workingHoursEnd) {
+      const mins = timeToMinutes(clinicSettings.workingHoursEnd);
+      if (mins > 0) endHour = Math.ceil(mins / 60);
+    }
+    if (startHour >= endHour) {
+      startHour = 8;
+      endHour = 18;
+    }
+
+    const options: string[] = [];
+    for (let h = startHour; h <= endHour; h++) {
+      options.push(minutesToTimeStr(h * 60));
+      if (h < endHour) {
+        options.push(minutesToTimeStr(h * 60 + 30));
+      }
+    }
+    return options;
+  }, [clinicSettings]);
+
   const timelineSlots = useMemo(() => {
-    return OPERATING_HOURS.map((hourObj) => {
+    return operatingHours.map((hourObj) => {
       const slotStartMin = hourObj.hour * 60;
       const slotEndMin = slotStartMin + 60;
 
-      const apptsInSlot = appointments.filter((apt) => {
+      const apptsInSlot = dateAppointments.filter((apt) => {
         const aptStartMin = timeToMinutes(apt.time);
         return aptStartMin >= slotStartMin && aptStartMin < slotEndMin;
       });
@@ -323,9 +514,8 @@ export const AppointmentsPage: React.FC = () => {
         appointments: apptsInSlot,
       };
     });
-  }, [appointments]);
+  }, [operatingHours, dateAppointments]);
 
-  // Table Columns
   const tableColumns: Column<Appointment>[] = [
     {
       key: 'time',
@@ -351,11 +541,6 @@ export const AppointmentsPage: React.FC = () => {
           ) : (
             <span style={{ fontWeight: 600 }}>{apt.patientName}</span>
           )}
-          {apt.patientPhone && (
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-              {apt.patientPhone}
-            </div>
-          )}
         </div>
       ),
     },
@@ -375,9 +560,6 @@ export const AppointmentsPage: React.FC = () => {
       render: (apt) => (
         <div>
           <span style={{ fontWeight: 500 }}>{apt.type}</span>
-          {apt.room && (
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{apt.room}</div>
-          )}
         </div>
       ),
     },
@@ -444,7 +626,6 @@ export const AppointmentsPage: React.FC = () => {
         </div>
 
         <div className="appointments-header-actions">
-          {/* View Toggle */}
           <div className="view-mode-toggle">
             <button
               className={`view-toggle-btn ${viewMode === 'timeline' ? 'active' : ''}`}
@@ -475,7 +656,6 @@ export const AppointmentsPage: React.FC = () => {
       {/* Filter Controls Card */}
       <Card className="appointments-controls-card">
         <div className="appointments-controls">
-          {/* Date Navigation Bar */}
           <div className="date-navigation-bar">
             <div className="date-nav-controls">
               <Button variant="secondary" size="sm" onClick={handlePrevDay} iconLeft={<ChevronLeft size={16} />}>
@@ -504,7 +684,6 @@ export const AppointmentsPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Secondary Filters Bar */}
           <div className="secondary-filters-bar">
             <div className="status-filter-pills">
               {(['All', 'Scheduled', 'Completed', 'Cancelled', 'No Show'] as const).map((st) => (
@@ -526,9 +705,9 @@ export const AppointmentsPage: React.FC = () => {
                 onChange={(e) => setSelectedTherapist(e.target.value)}
               >
                 <option value="All">All Physiotherapists</option>
-                {appointmentService.getTherapists().map((t) => (
-                  <option key={t} value={t}>
-                    {t}
+                {therapists.map((t) => (
+                  <option key={t.id} value={t.name}>
+                    {t.name}
                   </option>
                 ))}
               </select>
@@ -544,7 +723,7 @@ export const AppointmentsPage: React.FC = () => {
         </div>
       </Card>
 
-      {/* Main Content: Timeline vs Table */}
+      {/* Content */}
       {viewMode === 'timeline' ? (
         <Card className="timeline-card">
           <div className="timeline-container">
@@ -552,8 +731,50 @@ export const AppointmentsPage: React.FC = () => {
               <span>
                 Daily Timeline for <strong>{formattedDateTitle}</strong>
               </span>
-              <span>{appointments.length} appointment(s) found</span>
+              <span>{dateAppointments.length} appointment(s) on this day ({filteredAppointments.length} total)</span>
             </div>
+
+            {closestTargetInfo && (
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '0.75rem 1.25rem',
+                  marginBottom: '1rem',
+                  background: 'var(--bg-secondary, #1c2638)',
+                  border: '1px solid var(--primary, #3b82f6)',
+                  borderRadius: '8px',
+                  gap: '1rem',
+                  flexWrap: 'wrap',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease-in-out',
+                }}
+                onClick={() => setSelectedDate(closestTargetInfo.targetDate)}
+                title={`Click to jump to ${closestTargetInfo.targetDate}`}
+              >
+                <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                  No appointments scheduled for <strong>{formattedDateTitle}</strong>
+                  {isFiltered ? ' matching your active filter' : ''}. You have{' '}
+                  <strong>{closestTargetInfo.countOnTargetDate}</strong> appointment(s) on{' '}
+                  <strong>{closestTargetInfo.targetDate}</strong>
+                  {closestTargetInfo.totalMatching > closestTargetInfo.countOnTargetDate
+                    ? ` (${closestTargetInfo.totalMatching} total matching filter)`
+                    : ''}
+                  .
+                </span>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedDate(closestTargetInfo.targetDate);
+                  }}
+                >
+                  Jump to {closestTargetInfo.targetDate}
+                </Button>
+              </div>
+            )}
 
             <div className="timeline-hours-list">
               {timelineSlots.map((slot) => (
@@ -576,21 +797,10 @@ export const AppointmentsPage: React.FC = () => {
                             className={`appointment-card status-${apt.status.replace(' ', '-')}`}
                           >
                             <div className="appointment-card-header">
-                              {apt.patientId ? (
-                                <Link
-                                  to={`/patients/${apt.patientId}`}
-                                  className="appointment-patient-name"
-                                >
-                                  <User size={15} />
-                                  {apt.patientName}
-                                </Link>
-                              ) : (
-                                <span className="appointment-patient-name">
-                                  <User size={15} />
-                                  {apt.patientName}
-                                </span>
-                              )}
-
+                              <span className="appointment-patient-name">
+                                <User size={15} />
+                                {apt.patientName}
+                              </span>
                               <span className="appointment-time-badge">
                                 <Clock size={12} />
                                 {apt.time} ({apt.durationMinutes || 45}m)
@@ -604,7 +814,7 @@ export const AppointmentsPage: React.FC = () => {
                               </span>
                               <span className="appointment-meta-item">
                                 <MapPin size={13} />
-                                {apt.room || 'Room 101'}
+                                {apt.room || '—'}
                               </span>
                             </div>
 
@@ -671,14 +881,14 @@ export const AppointmentsPage: React.FC = () => {
         <Card>
           <Table
             columns={tableColumns}
-            data={appointments}
+            data={filteredAppointments}
             isLoading={isLoading}
             emptyMessage="No appointments found for the selected criteria."
           />
         </Card>
       )}
 
-      {/* Book / Edit Appointment Modal */}
+      {/* Modal */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -686,7 +896,6 @@ export const AppointmentsPage: React.FC = () => {
         size="lg"
       >
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {/* Patient Selector */}
           <div>
             <label className="input-label">Select Patient *</label>
             <select
@@ -695,7 +904,7 @@ export const AppointmentsPage: React.FC = () => {
               value={formData.patientId}
               onChange={handlePatientSelect}
             >
-              <option value="">-- Choose Existing Registered Patient --</option>
+              <option value="">-- Choose Registered Patient --</option>
               {patients.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name} ({p.phone})
@@ -714,26 +923,35 @@ export const AppointmentsPage: React.FC = () => {
           </div>
 
           <div className="form-grid-2">
-            <Input
-              name="patientPhone"
-              label="Contact Phone"
-              placeholder="+1 (555) 000-0000"
-              value={formData.patientPhone}
-              onChange={handleFormChange}
-            />
-
             <div>
-              <label className="input-label">Physiotherapist / Doctor *</label>
+              <label className="input-label">Physiotherapist *</label>
               <select
-                name="therapistName"
+                name="therapistId"
                 className="therapist-select-control"
                 style={{ width: '100%' }}
-                value={formData.therapistName}
-                onChange={handleFormChange}
+                value={formData.therapistId}
+                onChange={handleTherapistSelect}
               >
-                {appointmentService.getTherapists().map((t) => (
-                  <option key={t} value={t}>
-                    {t}
+                {therapists.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="input-label">Appointment Type *</label>
+              <select
+                name="appointmentTypeId"
+                className="therapist-select-control"
+                style={{ width: '100%' }}
+                value={formData.appointmentTypeId}
+                onChange={handleAppointmentTypeSelect}
+              >
+                {appointmentTypes.map((aptType) => (
+                  <option key={aptType.id} value={aptType.id}>
+                    {aptType.name} ({aptType.durationMinutes || 45} mins)
                   </option>
                 ))}
               </select>
@@ -760,28 +978,7 @@ export const AppointmentsPage: React.FC = () => {
                 value={formData.time}
                 onChange={handleFormChange}
               >
-                {[
-                  '08:00 AM',
-                  '08:30 AM',
-                  '09:00 AM',
-                  '09:30 AM',
-                  '10:00 AM',
-                  '10:30 AM',
-                  '11:00 AM',
-                  '11:30 AM',
-                  '12:00 PM',
-                  '12:30 PM',
-                  '01:00 PM',
-                  '01:30 PM',
-                  '02:00 PM',
-                  '02:30 PM',
-                  '03:00 PM',
-                  '03:30 PM',
-                  '04:00 PM',
-                  '04:30 PM',
-                  '05:00 PM',
-                  '05:30 PM',
-                ].map((t) => (
+                {bookingTimeOptions.map((t) => (
                   <option key={t} value={t}>
                     {t}
                   </option>
@@ -790,99 +987,31 @@ export const AppointmentsPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Conflict Warning Alert */}
           {conflictWarning && (
             <div className="conflict-warning-box">
               <AlertTriangle size={20} />
-              <div>
-                <div className="conflict-warning-title">Scheduling Conflict Detected</div>
-                <div>{conflictWarning}</div>
-              </div>
+              <div>{conflictWarning}</div>
             </div>
           )}
 
-          <div className="form-grid-2">
-            <div>
-              <label className="input-label">Duration</label>
-              <select
-                name="durationMinutes"
-                className="therapist-select-control"
-                style={{ width: '100%' }}
-                value={formData.durationMinutes}
-                onChange={handleFormChange}
-              >
-                <option value={15}>15 Minutes</option>
-                <option value={30}>30 Minutes</option>
-                <option value={45}>45 Minutes (Standard)</option>
-                <option value={60}>60 Minutes (Comprehensive)</option>
-                <option value={90}>90 Minutes (Specialized)</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="input-label">Treatment Type</label>
-              <select
-                name="type"
-                className="therapist-select-control"
-                style={{ width: '100%' }}
-                value={formData.type}
-                onChange={handleFormChange}
-              >
-                {appointmentService.getAppointmentTypes().map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="form-grid-2">
-            <div>
-              <label className="input-label">Assigned Room / Facility</label>
-              <select
-                name="room"
-                className="therapist-select-control"
-                style={{ width: '100%' }}
-                value={formData.room}
-                onChange={handleFormChange}
-              >
-                {appointmentService.getRooms().map((r) => (
-                  <option key={r} value={r}>
-                    {r}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <Input
-              name="fee"
-              label="Session Fee ($)"
-              type="number"
-              value={formData.fee}
-              onChange={handleFormChange}
-              iconLeft={<DollarSign size={16} />}
-            />
-          </div>
-
           <div>
-            <label className="input-label">Clinical / Scheduling Notes</label>
+            <label className="input-label">Clinical Notes / Reason for Visit</label>
             <textarea
               name="notes"
-              className="input-field"
+              className="form-textarea"
               rows={3}
-              placeholder="e.g. Needs heat pad before treatment, post-surgery follow up..."
               value={formData.notes}
               onChange={handleFormChange}
+              placeholder="e.g. Lumbar spine evaluation & posture assessment..."
             />
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem' }}>
-            <Button variant="secondary" onClick={() => setIsModalOpen(false)} type="button">
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
+            <Button variant="outline" type="button" onClick={() => setIsModalOpen(false)}>
               Cancel
             </Button>
             <Button variant="primary" type="submit">
-              {editingAppointment ? 'Save Changes' : 'Confirm Booking'}
+              {editingAppointment ? 'Update Appointment' : 'Confirm Booking'}
             </Button>
           </div>
         </form>
@@ -890,3 +1019,5 @@ export const AppointmentsPage: React.FC = () => {
     </div>
   );
 };
+
+export default AppointmentsPage;

@@ -1,29 +1,40 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import type { AuthState, User } from '../types';
-import { useNotification } from './NotificationContext';
-import api from '../services/api';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
+import type { AuthState, User } from "../types";
+import { useNotification } from "./NotificationContext";
+import api from "../services/api";
 
 interface AuthContextProps extends AuthState {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
 }
 
-const AuthContext = createContext<AuthContextProps | undefined>(undefined);
+export const AuthContext = createContext<AuthContextProps | undefined>(
+  undefined,
+);
 
-const normalizeRole = (roleStr?: string): User['role'] => {
-  if (!roleStr) return 'receptionist';
-  const clean = roleStr.toLowerCase().replace(/[\s_-]+/g, '');
-  if (clean === 'superadmin') return 'superadmin';
-  if (clean === 'admin' || clean === 'clinicadmin') return 'admin';
-  if (clean === 'physiotherapist' || clean === 'therapist') return 'physiotherapist';
-  if (clean === 'doctor') return 'doctor';
-  if (clean === 'receptionist') return 'receptionist';
-  if (clean === 'accountant') return 'accountant';
-  if (clean === 'patient') return 'patient';
-  return 'receptionist';
+const normalizeRole = (roleStr?: string): User["role"] => {
+  if (!roleStr) return "receptionist";
+  const clean = roleStr.toLowerCase().replace(/[\s_-]+/g, "");
+  if (clean === "superadmin") return "superadmin";
+  if (clean === "admin" || clean === "clinicadmin") return "admin";
+  if (clean === "physiotherapist" || clean === "therapist")
+    return "physiotherapist";
+  if (clean === "doctor") return "doctor";
+  if (clean === "receptionist") return "receptionist";
+  if (clean === "accountant") return "accountant";
+  if (clean === "patient") return "patient";
+  return "receptionist";
 };
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [state, setState] = useState<AuthState>({
     user: null,
     isAuthenticated: false,
@@ -33,20 +44,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { showToast } = useNotification();
 
   const logout = useCallback(() => {
-    localStorage.removeItem('gf_auth_token');
-    localStorage.removeItem('gf_auth_user');
+    localStorage.removeItem("gf_auth_token");
+    localStorage.removeItem("gf_auth_user");
     setState({
       user: null,
       isAuthenticated: false,
       loading: false,
     });
-    showToast('Logged out successfully.', 'info');
+    showToast("Logged out successfully.", "info");
   }, [showToast]);
 
   useEffect(() => {
     const initializeAuth = async () => {
-      const token = localStorage.getItem('gf_auth_token');
-      const storedUser = localStorage.getItem('gf_auth_user');
+      const token = localStorage.getItem("gf_auth_token");
+      const storedUser = localStorage.getItem("gf_auth_user");
 
       if (token && storedUser) {
         try {
@@ -57,17 +68,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           });
 
           // Verify with Backend if it's not a mock token
-          if (!token.startsWith('mock_')) {
+          if (!token.startsWith("mock_")) {
             try {
-              const response = await api.get('/auth/me');
+              const response = await api.get("/auth/me");
               const raw = response.data?.data || response.data;
               const freshUser: User = {
                 id: String(raw.id),
-                email: raw.email || '',
-                name: raw.name || `${raw.firstName || ''} ${raw.lastName || ''}`.trim() || raw.username || 'User',
+                email: raw.email || "",
+                name:
+                  raw.name ||
+                  `${raw.firstName || ""} ${raw.lastName || ""}`.trim() ||
+                  raw.username ||
+                  "User",
                 role: normalizeRole(raw.role),
               };
-              localStorage.setItem('gf_auth_user', JSON.stringify(freshUser));
+              localStorage.setItem("gf_auth_user", JSON.stringify(freshUser));
               setState({
                 user: freshUser,
                 isAuthenticated: true,
@@ -95,18 +110,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setState({ user: null, isAuthenticated: false, loading: false });
     };
 
-    window.addEventListener('gf-auth-logout', handleLogoutEvent);
+    window.addEventListener("gf-auth-logout", handleLogoutEvent);
     return () => {
-      window.removeEventListener('gf-auth-logout', handleLogoutEvent);
+      window.removeEventListener("gf-auth-logout", handleLogoutEvent);
     };
   }, []);
 
-  const login = async (emailOrUsername: string, password: string): Promise<boolean> => {
+  const login = async (
+    emailOrUsername: string,
+    password: string,
+  ): Promise<boolean> => {
     setState((prev) => ({ ...prev, loading: true }));
 
     try {
       // Call actual backend authentication with usernameOrEmail and email for maximum compatibility
-      const response = await api.post('/auth/login', {
+      const response = await api.post("/auth/login", {
         usernameOrEmail: emailOrUsername,
         email: emailOrUsername,
         password,
@@ -117,13 +135,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const formattedUser: User = {
         id: String(rawUser.id),
-        email: rawUser.email || (emailOrUsername.includes('@') ? emailOrUsername : `${emailOrUsername}@gloryflorence.com`),
-        name: rawUser.name || `${rawUser.firstName || ''} ${rawUser.lastName || ''}`.trim() || rawUser.username || emailOrUsername,
+        email:
+          rawUser.email ||
+          (emailOrUsername.includes("@")
+            ? emailOrUsername
+            : `${emailOrUsername}@gloryflorence.com`),
+        name:
+          rawUser.name ||
+          `${rawUser.firstName || ""} ${rawUser.lastName || ""}`.trim() ||
+          rawUser.username ||
+          emailOrUsername,
         role: normalizeRole(rawUser.role),
       };
 
-      localStorage.setItem('gf_auth_token', token);
-      localStorage.setItem('gf_auth_user', JSON.stringify(formattedUser));
+      localStorage.setItem("gf_auth_token", token);
+      localStorage.setItem("gf_auth_user", JSON.stringify(formattedUser));
 
       setState({
         user: formattedUser,
@@ -131,67 +157,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loading: false,
       });
 
-      showToast(`Welcome back, ${formattedUser.name}!`, 'success');
+      showToast(`Welcome back, ${formattedUser.name}!`, "success");
       return true;
     } catch (error: any) {
-      // Offline fallback: check if it's a network error (server is not reachable)
-      const isNetworkError = !error.response;
-      if (isNetworkError) {
-        console.warn("Backend not detected. Falling back to client-side mock authentication.");
-
-        // Supports both backend seeded accounts (API_DOCUMENTATION.md Section 3.3) and email presets
-        const mockAccounts: Record<string, { role: User['role']; name: string; password: string }> = {
-          // Backend seeded accounts
-          'admin': { role: 'superadmin', name: 'System Administrator', password: 'Admin123!' },
-          'admin@gloryflorence.com': { role: 'superadmin', name: 'System Administrator', password: 'Admin123!' },
-
-          'clinicadmin': { role: 'admin', name: 'Clinic Administrator', password: 'Admin123!' },
-          'clinicadmin@gloryflorence.com': { role: 'admin', name: 'Clinic Administrator', password: 'Admin123!' },
-
-          'therapist': { role: 'physiotherapist', name: 'Physiotherapist', password: 'Therapist123!' },
-          'therapist@gloryflorence.com': { role: 'physiotherapist', name: 'Physiotherapist', password: 'Therapist123!' },
-
-          'doctor': { role: 'doctor', name: 'Dr. Glory Doctor', password: 'Doctor123!' },
-          'doctor@gloryflorence.com': { role: 'doctor', name: 'Dr. Glory Doctor', password: 'Doctor123!' },
-
-          'receptionist': { role: 'receptionist', name: 'Front Desk Receptionist', password: 'Receptionist123!' },
-          'receptionist@gloryflorence.com': { role: 'receptionist', name: 'Front Desk Receptionist', password: 'Receptionist123!' },
-
-          'accountant': { role: 'accountant', name: 'Chief Accountant', password: 'Accountant123!' },
-          'accountant@gloryflorence.com': { role: 'accountant', name: 'Chief Accountant', password: 'Accountant123!' },
-
-          'patientuser': { role: 'patient', name: 'Registered Patient', password: 'Patient123!' },
-          'patientuser@gloryflorence.com': { role: 'patient', name: 'Registered Patient', password: 'Patient123!' },
-          'patient@gloryflorence.com': { role: 'patient', name: 'Registered Patient', password: 'Patient123!' },
-        };
-
-        const key = emailOrUsername.toLowerCase().trim();
-        const account = mockAccounts[key];
-
-        if (account && (password === account.password || password === 'admin123' || password === 'Admin123!')) {
-          const mockUser: User = {
-            id: `usr_${account.role}`,
-            email: key.includes('@') ? key : `${key}@gloryflorence.com`,
-            name: account.name,
-            role: account.role,
-          };
-
-          localStorage.setItem('gf_auth_token', `mock_jwt_token_for_gf_${account.role}`);
-          localStorage.setItem('gf_auth_user', JSON.stringify(mockUser));
-
-          setState({
-            user: mockUser,
-            isAuthenticated: true,
-            loading: false,
-          });
-
-          showToast(`[Offline Mode] Signed in as ${mockUser.name} (${account.role})`, 'success');
-          return true;
-        }
-      }
-
       setState((prev) => ({ ...prev, loading: false }));
-      // Toast notification is handled by Axios response interceptor
       return false;
     }
   };
@@ -206,7 +175,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 export const useAuth = (): AuthContextProps => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };

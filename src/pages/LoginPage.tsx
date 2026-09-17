@@ -16,7 +16,7 @@ import {
   DollarSign,
   User,
 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks';
 import { Input } from '../components/common/Input';
 import { Button } from '../components/common/Button';
 import './LoginPage.css';

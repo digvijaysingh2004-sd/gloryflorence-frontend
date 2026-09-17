@@ -4,7 +4,14 @@
   border: 1px solid var(--border-color);
   box-shadow: var(--card-shadow);
   overflow: hidden;
+  padding: 1.5rem;
   transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.card:has(> .card-header),
+.card:has(> .card-body),
+.card.card-no-padding {
+  padding: 0;
 }
 
 .card-hoverable:hover {
