@@ -164,6 +164,40 @@
   margin: auto 0;
 }
 
+.auth-mobile-brand {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.auth-mobile-logo {
+  background: var(--primary-500) !important;
+  color: #ffffff !important;
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 10px !important;
+}
+
+.auth-mobile-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: block;
+  line-height: 1.2;
+}
+
+.auth-mobile-tagline {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+  display: block;
+}
+
 /* Responsive queries */
 @media (max-width: 900px) {
   .auth-layout-container {
@@ -179,6 +213,9 @@
   }
   .auth-hero-section {
     display: none;
+  }
+  .auth-mobile-brand {
+    display: flex;
   }
   .auth-form-section {
     padding: 24px 16px;

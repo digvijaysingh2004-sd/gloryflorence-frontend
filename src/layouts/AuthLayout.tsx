@@ -56,6 +56,15 @@ export const AuthLayout: React.FC<{ children: React.ReactNode }> = ({ children }
         {/* Right Form Card Side */}
         <div className="auth-form-section">
           <div className="auth-card">
+            <div className="auth-mobile-brand">
+              <div className="auth-brand-logo auth-mobile-logo">
+                <Activity size={24} />
+              </div>
+              <div>
+                <span className="auth-mobile-title">Glory Florence</span>
+                <span className="auth-mobile-tagline">Physiotherapy & Clinical EMR</span>
+              </div>
+            </div>
             {children}
           </div>
         </div>

@@ -109,3 +109,40 @@
   gap: 12px;
   flex-shrink: 0;
 }
+
+/* Responsive overrides for Modals */
+@media (max-width: 640px) {
+  .modal-overlay {
+    padding: 10px;
+    align-items: flex-end;
+  }
+
+  .modal-container {
+    max-height: 94vh;
+    border-radius: 16px 16px 10px 10px;
+    width: 100%;
+  }
+
+  .modal-header {
+    padding: 14px 16px;
+  }
+
+  .modal-title {
+    font-size: 1rem;
+  }
+
+  .modal-body {
+    padding: 16px;
+  }
+
+  .modal-footer {
+    padding: 12px 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .modal-footer > * {
+    flex: 1 1 calc(50% - 4px);
+    min-width: 120px;
+  }
+}

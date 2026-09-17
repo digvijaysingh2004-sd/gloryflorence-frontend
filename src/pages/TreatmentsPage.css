@@ -401,8 +401,38 @@
 }
 
 @media (max-width: 768px) {
+  .treatments-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .treatments-header button {
+    width: 100%;
+  }
+
+  .treatments-tabs-nav {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .treatments-tab-btn {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+
   .treatments-grid,
   .exercises-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .treatment-controls-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .treatment-search-box {
+    width: 100%;
   }
 }

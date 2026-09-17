@@ -1,6 +1,7 @@
 .table-container {
   width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   background-color: var(--bg-surface);
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-color);
@@ -11,6 +12,7 @@
   border-collapse: collapse;
   text-align: left;
   font-size: 0.875rem;
+  min-width: 600px;
 }
 
 .table-thead {
@@ -82,4 +84,29 @@
   align-items: center;
   justify-content: space-between;
   background-color: var(--bg-subtle);
+}
+
+/* Responsive Table Overrides */
+@media (max-width: 768px) {
+  .table-th {
+    padding: 10px 12px;
+    font-size: 0.7rem;
+  }
+
+  .table-td {
+    padding: 10px 12px;
+    font-size: 0.8125rem;
+  }
+
+  .table-td-skeleton {
+    padding: 10px 12px;
+  }
+
+  .table-footer {
+    padding: 12px 14px;
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+    text-align: center;
+  }
 }

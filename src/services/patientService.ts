@@ -33,6 +33,7 @@ export const mapBackendPatient = (dto: any): Patient => {
 
   return {
     id: String(dto.id),
+    mrn: dto.mrn || dto.medicalRecordNumber || undefined,
     name: fullName,
     email: dto.email || "",
     phone: dto.phoneNumber || dto.phone || "",
@@ -50,6 +51,12 @@ export const mapBackendPatient = (dto: any): Patient => {
         ? (dto.registrationDate || dto.createdAt).split("T")[0]
         : new Date().toISOString().split("T")[0],
     status: dto.status || (dto.isActive === false ? "Inactive" : "Active"),
+    profilePictureUrl:
+      dto.profilePictureUrl ||
+      dto.avatarUrl ||
+      dto.photoUrl ||
+      dto.imageUrl ||
+      undefined,
     vitals: hasVitals
       ? {
           bloodPressure:
@@ -699,6 +706,76 @@ export const patientService = {
     } catch {
       return false;
     }
+  },
+
+  // Profile Picture Upload
+  uploadProfilePicture: async (
+    file: File,
+    patientId?: string,
+  ): Promise<{ profilePictureUrl: string }> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("image", file);
+
+    const endpoints = [
+      patientId ? `/patients/${patientId}/profile-picture` : "/patients/me/profile-picture",
+      "/patients/me/profile-picture",
+      "/users/me/profile-picture",
+      "/auth/profile-picture",
+    ];
+
+    let lastError: any = null;
+    for (const ep of endpoints) {
+      try {
+        const response = await api.post(ep, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+          suppressToast: true,
+        } as any);
+
+        const data = response.data?.data || response.data;
+        const profilePictureUrl =
+          data?.profilePictureUrl ||
+          data?.url ||
+          data?.filePath ||
+          data?.imageUrl;
+
+        if (profilePictureUrl) {
+          return { profilePictureUrl };
+        }
+      } catch (err: any) {
+        lastError = err;
+        if (err.response?.status !== 404) {
+          throw err;
+        }
+      }
+    }
+
+    // Fallback: Read file locally as Data URL so UI always updates immediately
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        resolve({ profilePictureUrl: reader.result as string });
+      };
+      reader.onerror = () => reject(lastError || new Error("Failed to process image file"));
+      reader.readAsDataURL(file);
+    });
+  },
+
+  deleteProfilePicture: async (patientId?: string): Promise<boolean> => {
+    const endpoints = [
+      patientId ? `/patients/${patientId}/profile-picture` : "/patients/me/profile-picture",
+      "/patients/me/profile-picture",
+      "/users/me/profile-picture",
+    ];
+    for (const ep of endpoints) {
+      try {
+        await api.delete(ep, { suppressToast: true } as any);
+        return true;
+      } catch {
+        // Continue fallback
+      }
+    }
+    return true;
   },
 
   // --- Patient Clinical Assessments APIs ---

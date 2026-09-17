@@ -15,11 +15,14 @@ import { Button } from '../components/common/Button';
 import { Input } from '../components/common/Input';
 import { useAuth, useNotification } from '../hooks';
 import { settingsService, type ClinicSettings } from '../services/settingsService';
+import { patientService } from '../services/patientService';
 import { AppointmentTypesTab } from '../components/settings/AppointmentTypesTab';
+import { ProfilePhotoUpload } from '../components/settings/ProfilePhotoUpload';
+import type { Patient } from '../types';
 import './SettingsPage.css';
 
 export const SettingsPage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const { showToast } = useNotification();
   const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
   const isPatient = user?.role === 'patient';
@@ -33,6 +36,19 @@ export const SettingsPage: React.FC = () => {
   // Profile local state
   const [profileName, setProfileName] = useState<string>(user?.name || '');
   const [profileEmail, setProfileEmail] = useState<string>(user?.email || '');
+
+  // Patient profile fields
+  const [patientData, setPatientData] = useState<Patient | null>(null);
+  const [patientPhone, setPatientPhone] = useState<string>('');
+  const [patientDob, setPatientDob] = useState<string>('');
+  const [patientGender, setPatientGender] = useState<'Male' | 'Female' | 'Other'>('Male');
+  const [patientBloodGroup, setPatientBloodGroup] = useState<string>('O+');
+  const [patientAddress, setPatientAddress] = useState<string>('');
+  const [patientCity, setPatientCity] = useState<string>('');
+  const [patientState, setPatientState] = useState<string>('');
+  const [patientCountry, setPatientCountry] = useState<string>('');
+  const [patientEmergencyName, setPatientEmergencyName] = useState<string>('');
+  const [patientEmergencyPhone, setPatientEmergencyPhone] = useState<string>('');
 
   // Password local state
   const [currentPassword, setCurrentPassword] = useState<string>('');
@@ -48,11 +64,47 @@ export const SettingsPage: React.FC = () => {
     }
   }, [showToast]);
 
+  const loadPatientProfile = useCallback(async () => {
+    try {
+      const data = await patientService.getMyProfile();
+      if (data) {
+        setPatientData(data);
+        if (data.name) setProfileName(data.name);
+        if (data.email) setProfileEmail(data.email);
+        if (data.phone) setPatientPhone(data.phone);
+        if (data.dateOfBirth) setPatientDob(data.dateOfBirth);
+        if (data.gender) setPatientGender(data.gender as any);
+        if (data.bloodGroup) setPatientBloodGroup(data.bloodGroup);
+        if (data.address) setPatientAddress(data.address);
+        if (data.city) setPatientCity(data.city);
+        if (data.state) setPatientState(data.state);
+        if (data.country) setPatientCountry(data.country);
+        if (data.emergencyContactName) setPatientEmergencyName(data.emergencyContactName);
+        if (data.emergencyContactPhone) setPatientEmergencyPhone(data.emergencyContactPhone);
+      }
+    } catch (err) {
+      console.warn('Failed to load patient self-profile:', err);
+    }
+  }, []);
+
   useEffect(() => {
     if (isAdmin) {
       loadSettings();
     }
   }, [isAdmin, loadSettings]);
+
+  useEffect(() => {
+    if (isPatient) {
+      loadPatientProfile();
+    }
+  }, [isPatient, loadPatientProfile]);
+
+  const handlePhotoChanged = (newUrl: string | null) => {
+    updateUser({ profilePictureUrl: newUrl || undefined });
+    if (patientData) {
+      setPatientData({ ...patientData, profilePictureUrl: newUrl || undefined });
+    }
+  };
 
   const handleClinicSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,10 +129,25 @@ export const SettingsPage: React.FC = () => {
     setIsSaving(true);
     try {
       await settingsService.updateUserProfile({ name: profileName, email: profileEmail });
-      if (user) {
-        const updatedUser = { ...user, name: profileName, email: profileEmail };
-        localStorage.setItem('gf_auth_user', JSON.stringify(updatedUser));
+
+      if (isPatient && patientData?.id) {
+        await patientService.update(patientData.id, {
+          name: profileName,
+          email: profileEmail,
+          phone: patientPhone,
+          dateOfBirth: patientDob,
+          gender: patientGender,
+          bloodGroup: patientBloodGroup,
+          address: patientAddress,
+          city: patientCity,
+          state: patientState,
+          country: patientCountry,
+          emergencyContactName: patientEmergencyName,
+          emergencyContactPhone: patientEmergencyPhone,
+        });
       }
+
+      updateUser({ name: profileName, email: profileEmail });
       showToast('User profile updated successfully.', 'success');
     } catch {
       showToast('Failed to update profile.', 'error');
@@ -250,51 +317,173 @@ export const SettingsPage: React.FC = () => {
       {/* User Profile Tab */}
       {activeTab === 'profile' && (
         <Card>
-          <form onSubmit={handleProfileSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <h2 className="settings-section-title">
-              <UserIcon size={20} color="var(--primary)" />
-              Personal Account Information
-            </h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
+              <h2 className="settings-section-title" style={{ margin: 0 }}>
+                <UserIcon size={20} color="var(--primary)" />
+                {isPatient ? 'Patient Profile & Account' : 'Personal Account Information'}
+              </h2>
+              {isPatient && patientData?.mrn && (
+                <div style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  padding: '0.25rem 0.75rem',
+                  borderRadius: '9999px',
+                  background: 'var(--primary-50, #f0f9ff)',
+                  color: 'var(--primary-700, #0369a1)',
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  border: '1px solid var(--primary-200, #bae6fd)'
+                }}>
+                  MRN: {patientData.mrn}
+                </div>
+              )}
+            </div>
 
-            <div className="settings-form-grid">
-              <Input
-                label="Full Display Name"
-                value={profileName}
-                onChange={(e) => setProfileName(e.target.value)}
-                required
-              />
+            {/* Profile Picture Upload Section */}
+            <ProfilePhotoUpload
+              currentPhotoUrl={user?.profilePictureUrl || patientData?.profilePictureUrl}
+              userName={profileName || user?.name || 'Patient'}
+              isPatient={isPatient}
+              patientId={patientData?.id || user?.id}
+              onPhotoChanged={handlePhotoChanged}
+            />
 
-              <Input
-                label="Registered Email Address"
-                type="email"
-                value={profileEmail}
-                onChange={(e) => setProfileEmail(e.target.value)}
-                required
-              />
+            <form onSubmit={handleProfileSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <div className="settings-form-grid">
+                <Input
+                  label="Full Display Name"
+                  value={profileName}
+                  onChange={(e) => setProfileName(e.target.value)}
+                  required
+                />
 
-              <div>
-                <label className="input-label">Assigned Role</label>
-                <div
-                  style={{
-                    padding: '0.6rem 0.85rem',
-                    background: 'var(--bg-secondary, #f8fafc)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: '8px',
-                    fontWeight: 600,
-                    textTransform: 'capitalize',
-                  }}
-                >
-                  {user?.role || 'User'}
+                <Input
+                  label="Registered Email Address"
+                  type="email"
+                  value={profileEmail}
+                  onChange={(e) => setProfileEmail(e.target.value)}
+                  required
+                />
+
+                {isPatient && (
+                  <>
+                    <Input
+                      label="Phone Number"
+                      value={patientPhone}
+                      onChange={(e) => setPatientPhone(e.target.value)}
+                      placeholder="+1 (555) 000-0000"
+                    />
+
+                    <Input
+                      label="Date of Birth"
+                      type="date"
+                      value={patientDob}
+                      onChange={(e) => setPatientDob(e.target.value)}
+                    />
+
+                    <div>
+                      <label className="input-label">Gender</label>
+                      <select
+                        className="settings-select"
+                        value={patientGender}
+                        onChange={(e) => setPatientGender(e.target.value as any)}
+                      >
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="input-label">Blood Group</label>
+                      <select
+                        className="settings-select"
+                        value={patientBloodGroup}
+                        onChange={(e) => setPatientBloodGroup(e.target.value)}
+                      >
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                      </select>
+                    </div>
+
+                    <Input
+                      label="Residential Street Address"
+                      value={patientAddress}
+                      onChange={(e) => setPatientAddress(e.target.value)}
+                      placeholder="e.g. 123 Main Street"
+                    />
+
+                    <Input
+                      label="City"
+                      value={patientCity}
+                      onChange={(e) => setPatientCity(e.target.value)}
+                      placeholder="e.g. Los Angeles"
+                    />
+
+                    <Input
+                      label="State / Province"
+                      value={patientState}
+                      onChange={(e) => setPatientState(e.target.value)}
+                      placeholder="e.g. CA"
+                    />
+
+                    <Input
+                      label="Country"
+                      value={patientCountry}
+                      onChange={(e) => setPatientCountry(e.target.value)}
+                      placeholder="e.g. USA"
+                    />
+
+                    <Input
+                      label="Emergency Contact Person"
+                      value={patientEmergencyName}
+                      onChange={(e) => setPatientEmergencyName(e.target.value)}
+                      placeholder="Full Name of Contact"
+                    />
+
+                    <Input
+                      label="Emergency Contact Phone"
+                      value={patientEmergencyPhone}
+                      onChange={(e) => setPatientEmergencyPhone(e.target.value)}
+                      placeholder="Phone Number of Contact"
+                    />
+                  </>
+                )}
+
+                <div>
+                  <label className="input-label">Assigned Role</label>
+                  <div
+                    style={{
+                      padding: '0.6rem 0.85rem',
+                      background: 'var(--bg-secondary, #f8fafc)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '8px',
+                      fontWeight: 600,
+                      textTransform: 'capitalize',
+                      height: '42px',
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    {user?.role || 'User'}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
-              <Button variant="primary" type="submit" iconLeft={<CheckCircle2 size={16} />}>
-                Update Profile
-              </Button>
-            </div>
-          </form>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
+                <Button variant="primary" type="submit" disabled={isSaving} iconLeft={<CheckCircle2 size={16} />}>
+                  {isSaving ? 'Updating Profile...' : 'Save Profile Changes'}
+                </Button>
+              </div>
+            </form>
+          </div>
         </Card>
       )}
 

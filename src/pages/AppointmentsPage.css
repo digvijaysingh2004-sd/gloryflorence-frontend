@@ -460,11 +460,94 @@
   }
   .appointments-header-actions {
     justify-content: space-between;
+    width: 100%;
   }
   .form-grid-2 {
     grid-template-columns: 1fr;
   }
   .timeline-hour-row {
     grid-template-columns: 80px 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .appointments-header-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .appointments-header-actions > * {
+    width: 100%;
+  }
+
+  .view-mode-toggle {
+    width: 100%;
+    display: flex;
+  }
+
+  .view-toggle-btn {
+    flex: 1;
+    justify-content: center;
+    padding: 6px 8px;
+    font-size: 0.8rem;
+  }
+
+  .date-navigation-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .date-nav-controls {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .current-date-heading {
+    font-size: 1rem;
+  }
+
+  .date-picker-wrapper {
+    width: 100%;
+  }
+
+  .date-input-control {
+    width: 100%;
+  }
+
+  .secondary-filters-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .status-filter-pills {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+    flex-wrap: nowrap;
+  }
+
+  .timeline-hour-row {
+    grid-template-columns: 60px 1fr;
+  }
+
+  .timeline-hour-label {
+    font-size: 0.75rem;
+  }
+
+  .time-slots-picker-grid {
+    grid-template-columns: repeat(auto-fill, minmax(65px, 1fr)) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .timeline-hour-row {
+    grid-template-columns: 50px 1fr;
+  }
+
+  .timeline-appointment-item {
+    padding: 8px 10px;
   }
 }

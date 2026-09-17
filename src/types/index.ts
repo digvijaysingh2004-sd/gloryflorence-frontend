@@ -21,6 +21,7 @@ export interface User {
     | "receptionist"
     | "accountant"
     | "patient";
+  profilePictureUrl?: string;
 }
 
 export interface AuthState {
@@ -153,6 +154,7 @@ export interface Invoice {
 
 export interface Patient {
   id: string;
+  mrn?: string;
   name: string;
   email: string;
   phone: string;
@@ -167,6 +169,7 @@ export interface Patient {
   emergencyContactPhone: string;
   registrationDate: string;
   status: "Active" | "Inactive";
+  profilePictureUrl?: string;
   medicalHistory?: MedicalHistory[];
   documents?: PatientDocument[];
   appointments?: Appointment[];

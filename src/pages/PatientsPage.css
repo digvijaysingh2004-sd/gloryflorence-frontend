@@ -282,25 +282,46 @@ select.input-field:focus {
 
 /* Responsiveness overrides */
 @media (max-width: 768px) {
+  .search-box-wrapper {
+    min-width: 0;
+    width: 100%;
+  }
+
   .form-grid-3, .form-grid-2 {
     grid-template-columns: 1fr;
   }
+
   .patients-header {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
   }
+
   .patients-header button {
     width: 100%;
   }
+
   .patients-filters-row {
     flex-direction: column;
     align-items: stretch;
   }
+
   .filters-selectors-wrapper {
     flex-direction: column;
     align-items: stretch;
+    width: 100%;
   }
+
   .filter-select {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-actions-container {
+    flex-direction: column-reverse;
+  }
+
+  .modal-actions-container button {
     width: 100%;
   }
 }

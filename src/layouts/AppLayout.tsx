@@ -28,6 +28,11 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
+  // Auto-close mobile drawer on route transition
+  React.useEffect(() => {
+    setIsMobileOpen(false);
+  }, [location.pathname]);
+
   const rawNavigationItems = [
     { label: 'Dashboard', path: '/', icon: <LayoutDashboard size={20} />, roles: ['admin', 'superadmin', 'physiotherapist', 'doctor', 'receptionist', 'accountant', 'patient'] },
     { label: 'Patients', path: '/patients', icon: <Users size={20} />, roles: ['admin', 'superadmin', 'physiotherapist', 'doctor', 'receptionist'] },
@@ -43,10 +48,10 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
 
   const getPageTitle = () => {
     if (location.pathname.startsWith('/patients/')) {
-      return 'Patient Profile & Clinical Details';
+      return 'Patient Profile';
     }
     const currentItem = rawNavigationItems.find(item => item.path === location.pathname);
-    return currentItem ? currentItem.label : 'Clinical Management System';
+    return currentItem ? currentItem.label : 'Clinical System';
   };
 
   const handleNavClick = (path: string) => {
@@ -74,12 +79,21 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
       {/* Sidebar Navigation */}
       <aside className={`sidebar ${isCollapsed ? 'sidebar-collapsed' : ''} ${isMobileOpen ? 'sidebar-mobile-open' : ''}`}>
         <div className="sidebar-brand">
-          <div className="sidebar-brand-icon">
-            <Activity size={24} />
+          <div className="sidebar-brand-content">
+            <div className="sidebar-brand-icon">
+              <Activity size={24} />
+            </div>
+            <span className={`sidebar-brand-text ${isCollapsed ? 'sidebar-brand-text-collapsed' : ''}`}>
+              Glory Florence
+            </span>
           </div>
-          <span className={`sidebar-brand-text ${isCollapsed ? 'sidebar-brand-text-collapsed' : ''}`}>
-            Glory Florence
-          </span>
+          <button
+            className="sidebar-mobile-close-btn"
+            onClick={() => setIsMobileOpen(false)}
+            aria-label="Close navigation menu"
+          >
+            <X size={20} />
+          </button>
         </div>
 
         <nav className="sidebar-nav">
@@ -142,7 +156,26 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
             {user && (
               <div className="header-user-profile">
                 <div className="header-user-avatar">
-                  {getInitials(user.name)}
+                  {user.profilePictureUrl ? (
+                    <img
+                      src={user.profilePictureUrl}
+                      alt={user.name}
+                      className="header-user-avatar-img"
+                      onError={(e) => {
+                        // Fallback to text initials if image fails to load
+                        (e.currentTarget as HTMLElement).style.display = 'none';
+                        const parent = (e.currentTarget as HTMLElement).parentElement;
+                        if (parent && !parent.querySelector('.header-user-initials')) {
+                          const span = document.createElement('span');
+                          span.className = 'header-user-initials';
+                          span.textContent = getInitials(user.name);
+                          parent.appendChild(span);
+                        }
+                      }}
+                    />
+                  ) : (
+                    getInitials(user.name)
+                  )}
                 </div>
                 <div className="header-user-info">
                   <span className="header-user-name">{user.name}</span>

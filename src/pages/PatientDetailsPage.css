@@ -2866,17 +2866,20 @@
 }
 
 /* Responsive details layout */
-@media (max-width: 992px) {
+@media (max-width: 1024px) {
   .details-grid-container {
     grid-template-columns: 1fr;
   }
+
   .profile-summary-column {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
     align-items: stretch;
   }
-  .profile-main-card, .vitals-quick-card {
+
+  .profile-main-card,
+  .vitals-quick-card {
     height: 100%;
     margin: 0;
   }
@@ -2886,19 +2889,121 @@
   .profile-summary-column {
     grid-template-columns: 1fr;
   }
+
+  .details-header-nav {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .details-header-nav .back-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .details-header-nav .registration-tag {
+    text-align: center;
+  }
+
+  .tabs-header-wrapper {
+    padding: 0.35rem;
+  }
+
   .tabs-header-bar {
-    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+    padding: 2px 0 6px 0;
+  }
+
+  .rx-meta-fields-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rx-goals-fields-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .vitals-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rx-print-patient-meta-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rx-print-footer-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .rx-print-signature-box {
+    text-align: left;
+    align-items: flex-start;
   }
 }
 
 @media (max-width: 600px) {
-  .profile-summary-column {
-    grid-template-columns: 1fr;
-  }
-  .vitals-form-grid {
-    grid-template-columns: 1fr;
-  }
   .tabs-header-bar {
     border-bottom: none;
+  }
+
+  .vitals-values-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .vitals-widget {
+    padding: 0.5rem 0.6rem;
+  }
+
+  .widget-val {
+    font-size: 0.85rem;
+  }
+
+  /* Printable document preview inside modal */
+  .invoice-printable-container,
+  .prescription-printable-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 10px !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  .print-table {
+    display: block !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    width: 100% !important;
+  }
+
+  .rx-print-tracker-row {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding-bottom: 4px !important;
+  }
+
+  .rx-print-item-card {
+    padding: 0.85rem !important;
+  }
+
+  .rx-print-dosage-bar {
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .vitals-values-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-circle-avatar {
+    width: 4rem;
+    height: 4rem;
+    font-size: 1.75rem;
+  }
+
+  .profile-name {
+    font-size: 1.1rem;
   }
 }

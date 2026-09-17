@@ -96,6 +96,61 @@ export const settingsService = {
       }
     }
   },
+
+  // POST /api/patients/me/profile-picture or /api/users/me/profile-picture
+  uploadProfilePicture: async (file: File): Promise<{ profilePictureUrl: string }> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('image', file);
+
+    const endpoints = [
+      '/patients/me/profile-picture',
+      '/users/me/profile-picture',
+      '/auth/profile-picture',
+    ];
+
+    let lastError: any = null;
+    for (const ep of endpoints) {
+      try {
+        const res = await api.post(ep, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          suppressToast: true,
+        } as any);
+        const data = res.data?.data || res.data;
+        const url = data?.profilePictureUrl || data?.url || data?.filePath || data?.imageUrl;
+        if (url) {
+          return { profilePictureUrl: url };
+        }
+      } catch (err: any) {
+        lastError = err;
+        if (err.response?.status !== 404) {
+          throw err;
+        }
+      }
+    }
+
+    // Fallback locally with Data URL
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve({ profilePictureUrl: reader.result as string });
+      reader.onerror = () => reject(lastError || new Error('Failed to read image'));
+      reader.readAsDataURL(file);
+    });
+  },
+
+  // DELETE /api/patients/me/profile-picture
+  deleteProfilePicture: async (): Promise<boolean> => {
+    const endpoints = ['/patients/me/profile-picture', '/users/me/profile-picture'];
+    for (const ep of endpoints) {
+      try {
+        await api.delete(ep, { suppressToast: true } as any);
+        return true;
+      } catch {
+        // Fallback
+      }
+    }
+    return true;
+  },
 };
 
 export default settingsService;

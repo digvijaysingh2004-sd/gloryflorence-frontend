@@ -14,6 +14,7 @@ interface AuthContextProps extends AuthState {
   login: (email: string, password: string) => Promise<boolean>;
   registerPatient: (data: RegisterPatientDto) => Promise<boolean>;
   logout: () => void;
+  updateUser: (updatedFields: Partial<User>) => void;
 }
 
 export const AuthContext = createContext<AuthContextProps | undefined>(
@@ -74,6 +75,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             try {
               const response = await api.get("/auth/me");
               const raw = response.data?.data || response.data;
+              const prevUser = storedUser ? JSON.parse(storedUser) : null;
               const freshUser: User = {
                 id: String(raw.id),
                 email: raw.email || "",
@@ -83,6 +85,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
                   raw.username ||
                   "User",
                 role: normalizeRole(raw.role),
+                profilePictureUrl:
+                  raw.profilePictureUrl ||
+                  raw.avatarUrl ||
+                  raw.photoUrl ||
+                  prevUser?.profilePictureUrl ||
+                  undefined,
               };
               localStorage.setItem("gf_auth_user", JSON.stringify(freshUser));
               setState({
@@ -106,6 +114,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
     initializeAuth();
   }, [logout]);
+
+  const updateUser = useCallback((updatedFields: Partial<User>) => {
+    setState((prev) => {
+      if (!prev.user) return prev;
+      const updated = { ...prev.user, ...updatedFields };
+      localStorage.setItem("gf_auth_user", JSON.stringify(updated));
+      return { ...prev, user: updated };
+    });
+  }, []);
 
   useEffect(() => {
     const handleLogoutEvent = () => {
@@ -148,6 +165,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           rawUser.username ||
           emailOrUsername,
         role: normalizeRole(rawUser.role),
+        profilePictureUrl:
+          rawUser.profilePictureUrl ||
+          rawUser.avatarUrl ||
+          rawUser.photoUrl ||
+          undefined,
       };
 
       localStorage.setItem("gf_auth_token", token);
@@ -222,7 +244,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   return (
-    <AuthContext.Provider value={{ ...state, login, registerPatient, logout }}>
+    <AuthContext.Provider value={{ ...state, login, registerPatient, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

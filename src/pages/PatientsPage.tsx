@@ -236,8 +236,16 @@ export const PatientsPage: React.FC = () => {
       title: 'Name',
       render: (patient) => (
         <div className="patient-table-cell-name">
-          <div className="patient-avatar-placeholder">
-            {patient.name.charAt(0)}
+          <div className="patient-avatar-placeholder" style={{ overflow: 'hidden' }}>
+            {patient.profilePictureUrl ? (
+              <img
+                src={patient.profilePictureUrl}
+                alt={patient.name}
+                style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+              />
+            ) : (
+              patient.name.charAt(0)
+            )}
           </div>
           <div>
             <div className="patient-row-fullname">{patient.name}</div>

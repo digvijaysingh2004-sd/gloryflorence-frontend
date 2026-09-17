@@ -38,6 +38,7 @@ export interface UserDto {
   firstName: string;
   lastName: string;
   name?: string;
+  profilePictureUrl?: string;
   createdAt: string;
 }
 
@@ -84,6 +85,7 @@ export interface PatientDto {
   emergencyContactPhone?: string;
   registrationDate?: string;
   status?: string;
+  profilePictureUrl?: string;
   medicalHistory: string;
   vitals?: {
     bloodPressure?: string;

@@ -163,6 +163,19 @@ button, input, select, textarea {
   color: inherit;
 }
 
+/* Responsive Root & Layout Variables */
+@media (max-width: 768px) {
+  :root {
+    --header-height: 60px;
+    --sidebar-width: 280px;
+  }
+
+  /* Prevent iOS auto-zoom on form fields */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
 [data-theme='dark'] {
   color-scheme: dark;
 }
