@@ -22,7 +22,7 @@ import { Button } from '../components/common/Button';
 import './LoginPage.css';
 
 export const LoginPage: React.FC = () => {
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -37,6 +37,13 @@ export const LoginPage: React.FC = () => {
 
   // Retrieve redirect route from state, default to root dashboard
   const redirectPath = (location.state as { from?: { pathname: string } })?.from?.pathname || '/';
+
+  // If already authenticated, redirect to dashboard immediately
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      navigate(redirectPath, { replace: true });
+    }
+  }, [isAuthenticated, navigate, redirectPath]);
 
   const rolesList = [
     { label: 'Admin', email: 'admin@gloryflorence.com', pass: 'Admin123!', icon: <Shield size={14} /> },
@@ -199,9 +206,9 @@ export const LoginPage: React.FC = () => {
           Sign In
         </Button>
 
-        <div style={{ textAlign: 'center', marginTop: '1.25rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+        <div className="login-register-prompt">
           New patient looking to book a session?{' '}
-          <Link to="/register" style={{ color: 'var(--primary)', fontWeight: 600, textDecoration: 'none' }}>
+          <Link to="/register" className="login-register-link">
             Register as New Patient
           </Link>
         </div>

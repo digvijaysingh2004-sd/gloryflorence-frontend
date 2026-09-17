@@ -712,7 +712,7 @@ export const patientService = {
   uploadProfilePicture: async (
     file: File,
     patientId?: string,
-  ): Promise<{ profilePictureUrl: string }> => {
+  ): Promise<{ profilePictureUrl: string; isServerStored: boolean }> => {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("image", file);
@@ -720,8 +720,8 @@ export const patientService = {
     const endpoints = [
       patientId ? `/patients/${patientId}/profile-picture` : "/patients/me/profile-picture",
       "/patients/me/profile-picture",
-      "/users/me/profile-picture",
       "/auth/profile-picture",
+      "/users/me/profile-picture",
     ];
 
     let lastError: any = null;
@@ -740,7 +740,7 @@ export const patientService = {
           data?.imageUrl;
 
         if (profilePictureUrl) {
-          return { profilePictureUrl };
+          return { profilePictureUrl, isServerStored: true };
         }
       } catch (err: any) {
         lastError = err;
@@ -750,11 +750,11 @@ export const patientService = {
       }
     }
 
-    // Fallback: Read file locally as Data URL so UI always updates immediately
+    // Fallback: Read file locally as Data URL so UI always updates immediately if backend endpoint is unseeded
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => {
-        resolve({ profilePictureUrl: reader.result as string });
+        resolve({ profilePictureUrl: reader.result as string, isServerStored: false });
       };
       reader.onerror = () => reject(lastError || new Error("Failed to process image file"));
       reader.readAsDataURL(file);

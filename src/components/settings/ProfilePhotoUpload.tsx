@@ -60,21 +60,27 @@ export const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
 
     try {
       let uploadedUrl = '';
+      let isServerStored = false;
       if (isPatient) {
         const res = await patientService.uploadProfilePicture(file, patientId);
         uploadedUrl = res.profilePictureUrl;
+        isServerStored = res.isServerStored;
       } else {
         const res = await settingsService.uploadProfilePicture(file);
         uploadedUrl = res.profilePictureUrl;
+        isServerStored = res.isServerStored;
       }
 
       onPhotoChanged(uploadedUrl);
-      showToast('Profile image updated successfully!', 'success');
+      if (isServerStored) {
+        showToast('Profile image saved to server successfully!', 'success');
+      } else {
+        showToast('Backend endpoint not yet active. Preview saved locally.', 'info');
+      }
     } catch (err: any) {
       console.error('Profile photo upload error:', err);
-      // Even if network fails, keep local preview so user experience is not blocked
       onPhotoChanged(objectUrl);
-      showToast('Profile image updated locally.', 'info');
+      showToast('Failed to upload to server. Preview saved locally.', 'warning');
     } finally {
       setIsUploading(false);
     }

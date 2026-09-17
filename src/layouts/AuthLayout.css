@@ -201,15 +201,24 @@
 /* Responsive queries */
 @media (max-width: 900px) {
   .auth-layout-container {
-    padding: 16px;
-    align-items: flex-start;
+    padding: 16px 12px;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    min-height: 100dvh;
     overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
   }
   .auth-split-wrapper {
     grid-template-columns: 1fr;
     max-height: none;
     min-height: auto;
-    overflow: visible;
+    overflow: hidden;
+    width: 100%;
+    max-width: 440px;
+    margin: auto 0;
+    box-sizing: border-box;
   }
   .auth-hero-section {
     display: none;
@@ -218,12 +227,33 @@
     display: flex;
   }
   .auth-form-section {
-    padding: 24px 16px;
+    padding: 24px 18px;
     max-height: none;
     overflow-y: visible;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
   }
   .auth-card {
     max-width: 100%;
+    width: 100%;
+    min-width: 0;
     margin: 0;
+    box-sizing: border-box;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-layout-container {
+    padding: 12px 10px;
+  }
+
+  .auth-split-wrapper {
+    border-radius: 16px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+  }
+
+  .auth-form-section {
+    padding: 20px 14px;
   }
 }

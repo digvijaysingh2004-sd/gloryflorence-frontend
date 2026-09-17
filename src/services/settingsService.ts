@@ -83,7 +83,7 @@ export const settingsService = {
   },
 
   // PUT /api/auth/profile or /api/users/me
-  updateUserProfile: async (data: { name: string; email: string }): Promise<boolean> => {
+  updateUserProfile: async (data: { name: string; email: string; profilePictureUrl?: string }): Promise<boolean> => {
     try {
       await api.put('/auth/profile', data, { suppress404Toast: true } as any);
       return true;
@@ -97,16 +97,16 @@ export const settingsService = {
     }
   },
 
-  // POST /api/patients/me/profile-picture or /api/users/me/profile-picture
-  uploadProfilePicture: async (file: File): Promise<{ profilePictureUrl: string }> => {
+  // POST /api/auth/profile-picture or /api/users/me/profile-picture or /api/patients/me/profile-picture
+  uploadProfilePicture: async (file: File): Promise<{ profilePictureUrl: string; isServerStored: boolean }> => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('image', file);
 
     const endpoints = [
-      '/patients/me/profile-picture',
-      '/users/me/profile-picture',
       '/auth/profile-picture',
+      '/users/me/profile-picture',
+      '/patients/me/profile-picture',
     ];
 
     let lastError: any = null;
@@ -119,7 +119,7 @@ export const settingsService = {
         const data = res.data?.data || res.data;
         const url = data?.profilePictureUrl || data?.url || data?.filePath || data?.imageUrl;
         if (url) {
-          return { profilePictureUrl: url };
+          return { profilePictureUrl: url, isServerStored: true };
         }
       } catch (err: any) {
         lastError = err;
@@ -129,24 +129,28 @@ export const settingsService = {
       }
     }
 
-    // Fallback locally with Data URL
+    // Fallback locally with Data URL only if backend endpoint has not been deployed yet
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onload = () => resolve({ profilePictureUrl: reader.result as string });
+      reader.onload = () => resolve({ profilePictureUrl: reader.result as string, isServerStored: false });
       reader.onerror = () => reject(lastError || new Error('Failed to read image'));
       reader.readAsDataURL(file);
     });
   },
 
-  // DELETE /api/patients/me/profile-picture
+  // DELETE /api/auth/profile-picture or /api/patients/me/profile-picture
   deleteProfilePicture: async (): Promise<boolean> => {
-    const endpoints = ['/patients/me/profile-picture', '/users/me/profile-picture'];
+    const endpoints = [
+      '/auth/profile-picture',
+      '/users/me/profile-picture',
+      '/patients/me/profile-picture',
+    ];
     for (const ep of endpoints) {
       try {
         await api.delete(ep, { suppressToast: true } as any);
         return true;
       } catch {
-        // Fallback
+        // Try fallback endpoint
       }
     }
     return true;

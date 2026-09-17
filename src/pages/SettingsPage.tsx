@@ -128,7 +128,11 @@ export const SettingsPage: React.FC = () => {
     e.preventDefault();
     setIsSaving(true);
     try {
-      await settingsService.updateUserProfile({ name: profileName, email: profileEmail });
+      await settingsService.updateUserProfile({
+        name: profileName,
+        email: profileEmail,
+        profilePictureUrl: user?.profilePictureUrl,
+      });
 
       if (isPatient && patientData?.id) {
         await patientService.update(patientData.id, {
